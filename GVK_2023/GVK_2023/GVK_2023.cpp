@@ -11,6 +11,7 @@ int _tmain(int argc, wchar_t* argv[]) {
 		Log::WriteParm(log, params);
 		In::IN in = In::getin(params.in);
 		Log::WriteIn(log, in);
+		Log::WriteInText(log, in);
 	}
 	catch (Error::ERROR error) {
 		// обработка ошибки если параметр -in не задан.

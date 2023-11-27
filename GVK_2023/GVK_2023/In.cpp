@@ -13,7 +13,6 @@ namespace In {
 			throw ERROR_THROW(110); // Ошибка при открытии файла с исходным кодом (-in)
 		}
 		fin.imbue(std::locale("ru_RU.UTF-8")); // правила чтения ru_RU.UTF-8
-		fin >> std::noskipws;				   // не пропускаем пробелы
 		fin.seekg(0, std::ios_base::end);      // перемещаемся в конец файла
 		int size = (int)fin.tellg();		   // количество символов
 		fin.seekg(0, std::ios_base::beg);	   // возвращаемся в начало файла
@@ -29,12 +28,9 @@ namespace In {
 		int col = 1;
 		wchar_t prev;
 		wchar_t ch;
-		while ((ch = fin.get()) != -1) {
+		while ((ch = fin.get()) != '\0' && !fin.fail()) {
 			if (ch == L' ' && prev == L' ') {
 				continue;
-			}
-			if (fin.fail()) {
-				break;
 			}
 			wchar_t wstr[3]{};
 			wstr[0] = ch;
@@ -83,4 +79,5 @@ namespace In {
 		fin.close();
 		return in;
 	}
+
 }

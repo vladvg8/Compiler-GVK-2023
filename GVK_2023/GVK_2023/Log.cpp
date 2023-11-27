@@ -1,5 +1,6 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include "Log.h"
+#include "In.h"
 #include "Error.h"
 #include <fstream>
 #include <stdarg.h>
@@ -29,6 +30,12 @@ namespace Log {
 		}
 		str[strlen(str)] = '\0';
 		(*log.stream) << str;
+	}
+
+	void WriteInText(LOG log, In::IN in) {
+		char* text = new char[in.size];
+		wcstombs(text, in.text, in.size);
+		(*log.stream) << text;
 	}
 
 	void WriteLine(LOG log, wchar_t* c, ...) {

@@ -15,6 +15,7 @@ namespace Log {
 	void WriteLog(LOG log);
 	void WriteError(LOG log, Error::ERROR error);
 	void WriteParm(LOG log, Parm::PARM parm);
+	void WriteInText(LOG log, In::IN in);
 	void WriteIn(LOG log, In::IN in);
 	void Close(LOG log);
 }
