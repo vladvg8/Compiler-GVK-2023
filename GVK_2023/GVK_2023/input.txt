@@ -1,0 +1,17 @@
+set int number: 127;
+set boolean isEmpty: true;
+set symbol letter: 'A';
+set text hello: "sdadsada";
+
+number: Pow(number, 3);
+number: Sum(1,2,3,4,5,6,7,10,10);
+
+letter: 'B';
+
+if (isEmpty) {
+    display("All is okay");
+} or if (number == 0) {
+    display("Not okay");
+} or {
+    display("Pofik");
+}
