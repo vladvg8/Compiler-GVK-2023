@@ -19,17 +19,18 @@ namespace In {
 		if (size > IN_MAX_LEN_TEXT) {
 			ERROR_THROW(112);
 		}
+
 		IN in;
 		in.size = 0;
 		in.lines = 1;
 		in.ignor = 0;
-		in.text = new wchar_t[size];
+		in.text = new wchar_t[size] {};
 
 		int col = 1;
-		wchar_t prev;
+		wchar_t prev = NULL;
 		wchar_t ch;
 		while ((ch = fin.get()) != '\0' && !fin.fail()) {
-			if (ch == L' ' && prev == L' ') {
+			if (ch == L' ' && prev == L' ' || ch == L' ' && prev == NULL) {
 				continue;
 			}
 			wchar_t wstr[3]{};
@@ -40,15 +41,16 @@ namespace In {
 			if (ich < 0) {
 				ich = ich + 256;
 			}
-			in.text[in.size] = ch;
 			switch (in.code[ich]) {
 			case IN::T: {
 				if (ch == '\n') {
+					in.text[in.size] = ch;
 					in.size++;
 					in.lines++;
 					col = 0;
 				}
 				else {
+					in.text[in.size] = ch;
 					col++;
 					in.size++;
 				}
@@ -56,7 +58,6 @@ namespace In {
 			}
 			case IN::F: {
 				col++;
-				std::wcout << ch;
 				throw ERROR_THROW_IN(111, in.lines, col);
 				break;
 			}
@@ -65,6 +66,7 @@ namespace In {
 				break;
 			}
 			case IN::SPACE: {
+				in.text[in.size] = ch;
 				in.size++;
 				col++;
 				break;

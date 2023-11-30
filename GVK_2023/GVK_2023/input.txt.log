@@ -1,26 +1,10 @@
-----Протокол-----28.11.2023 0:31:31----
+----Протокол-----1.12.2023 0:10:29----
 ----Параметры-----
 -log: input.txt.log
 -out: input.txt.out
 -in: input.txt
 ----Исходные данные-----
-Количество символов: 287
+Количество символов: 0
 Проигнорировано: 0
-Количество строк: 17
-set int number: 127;
-set boolean isEmpty: true;
-set symbol letter: 'A';
-set text hello: "sdadsada";
-
-number: Pow(number, 3);
-number: Sum(1,2,3,4,5,6,7,10,10);
-
-letter: 'B';
-
-if (isEmpty) {
- display("All is okay");
-} or if (number == 0) {
- display("Not okay");
-} or {
- display("Pofik");
-}ээээЭЭЭЭЭњOќ:К
+Количество строк: 1
+ээээЭЭЭЭЧ‡]xЭ
