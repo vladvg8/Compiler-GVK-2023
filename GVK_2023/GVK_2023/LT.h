@@ -10,6 +10,8 @@
 #define LEX_ID 'i'        // идентификатор
 #define LEX_LITERAL 'l'   // литерал
 #define LEX_FUNCTION 'f'  // function
+#define LEX_IF 'y'		  // if
+#define LEX_ELSE 's'      // else
 #define LEX_DECLARE 'd'   // declare
 #define LEX_RETURN 'r'    // return
 #define LEX_DISPLAY 'p'   // display (print)
@@ -21,16 +23,16 @@
 #define	LEX_BRACELET '}'
 #define LEX_LEFTTHESIS '('
 #define LEX_RIGHTTHESIS ')'
-#define LEX_MORE 'v'		// больше
-#define LEX_LESS 'v'        // меньше
-#define LEX_EQUAL 'v'       // равенство
-#define LEX_EXCLAMATION 'v' // неравенство
-#define LEX_MOREEQUAL 'v'   // больше равно
-#define LEX_LESSEQUAL 'v'   // меньше равно
+#define LEX_MORE 'k'		// больше
+#define LEX_LESS 'k'        // меньше
+#define LEX_EQUAL 'k'       // равенство
+#define LEX_EXCLAMATION 'k' // неравенство
+#define LEX_MOREEQUAL 'k'   // больше равно
+#define LEX_LESSEQUAL 'k'   // меньше равно
 #define LEX_PLUS 'v'        // +
 #define LEX_MINUS 'v'       // -
 #define LEX_START 'v'       // *
-#define LEXT_DIRSLASH 'v'   // /
+#define LEX_DIRSLASH 'v'   // /
 
 #include "In.h"
 #include <vector>

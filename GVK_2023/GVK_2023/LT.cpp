@@ -13,7 +13,7 @@ namespace LT {
 
 	void AddEntry(LexTable& lextable, Entry entry) {
 		if (lextable.size + 1 > LT_MAXSIZE) {
-			ERROR_THROW(115); // При добавлении лексемы был превышен максимальный размер таблицы лексем(-LT)
+			throw ERROR_THROW(115); // При добавлении лексемы был превышен максимальный размер таблицы лексем(-LT)
 		}
 		lextable.table[lextable.size] = entry;
 		lextable.size++;

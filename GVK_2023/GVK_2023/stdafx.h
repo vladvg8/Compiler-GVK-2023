@@ -8,6 +8,6 @@
 #include "Log.h"
 #include "LT.h"
 #include "IT.h"
-
+#include "FST.h"
 
 using namespace std;

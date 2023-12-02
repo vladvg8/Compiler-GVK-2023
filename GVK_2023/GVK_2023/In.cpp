@@ -17,7 +17,7 @@ namespace In {
 		int size = (int)fin.tellg();		   // количество символов
 		fin.seekg(0, std::ios_base::beg);	   // возвращаемся в начало файла
 		if (size > IN_MAX_LEN_TEXT) {
-			ERROR_THROW(112);
+			throw ERROR_THROW(112);
 		}
 
 		IN in;
@@ -72,7 +72,7 @@ namespace In {
 				break;
 			}
 			default: {
-				ERROR_THROW(1);
+				throw ERROR_THROW(1);
 				break;
 			}
 			}

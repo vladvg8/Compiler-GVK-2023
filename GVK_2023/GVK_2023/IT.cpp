@@ -11,7 +11,7 @@ namespace IT {
 
 	void Add(IdTable& idtable, Entry entry) {
 		if (idtable.size + 1 > TI_MAXSIZE) {
-			ERROR_THROW(117); // При добавлении инентификатора был превышен максимальный размер таблицы идентификаторов(IT)
+			throw ERROR_THROW(117); // При добавлении инентификатора был превышен максимальный размер таблицы идентификаторов(IT)
 		}
 		idtable.table[idtable.size] = entry;
 		idtable.size++;

@@ -1,6 +1,5 @@
-﻿  GVK_2023.cpp
-  IT.cpp
-  Log.cpp
+﻿  FST.cpp
+D:\Labs\KPO\course work\Compiler-GVK-2023\GVK_2023\GVK_2023\FST.cpp(59,17): warning C4267: инициализация: преобразование из "size_t" в "short"; возможна потеря данных
   Parm.cpp
   Создание кода...
   GVK_2023.vcxproj -> D:\Labs\KPO\course work\Compiler-GVK-2023\GVK_2023\Debug\GVK_2023.exe

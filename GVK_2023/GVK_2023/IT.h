@@ -17,7 +17,8 @@ namespace IT {
 		BYTE = 1, 
 		TEXT = 2,
 		SYMBOL = 3,
-		BOOLEAN = 4
+		BOOLEAN = 4,
+		HALLOW = 5
 	};
 	enum IDTYPE { // тип идентификаторов
 		VARIABLE = 1, 
@@ -49,7 +50,7 @@ namespace IT {
 			this->idxfirstLE = ifLE;
 			int nameSize = strlen(name);
 			if (nameSize > ID_MAXSIZE) {
-				ERROR_THROW(125);
+				throw ERROR_THROW(125);
 			}
 			strncpy_s(id, name, ID_MAXSIZE);
 			id[ID_MAXSIZE] = '\0';

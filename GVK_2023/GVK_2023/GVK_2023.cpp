@@ -12,6 +12,7 @@ int _tmain(int argc, wchar_t* argv[]) {
 		In::IN in = In::getin(params.in);
 		Log::WriteIn(log, in);
 		Log::WriteInText(log, in);
+		// Таблица лексем и идентификаторов
 		LT::LexTable lexTable = LT::Create();
 		IT::IdTable idTable = IT::Create();
 

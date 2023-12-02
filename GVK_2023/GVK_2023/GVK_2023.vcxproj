@@ -128,6 +128,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Error.cpp" />
+    <ClCompile Include="FST.cpp" />
     <ClCompile Include="GVK_2023.cpp" />
     <ClCompile Include="In.cpp" />
     <ClCompile Include="IT.cpp" />
@@ -137,6 +138,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Error.h" />
+    <ClInclude Include="FST.h" />
     <ClInclude Include="In.h" />
     <ClInclude Include="IT.h" />
     <ClInclude Include="Log.h" />
