@@ -34,7 +34,7 @@ namespace Log {
 
 	void WriteInText(LOG log, In::IN in) {
 		char* text = new char[in.size];
-		wcstombs(text, in.text, in.size);
+		strcpy(text, in.text);
 		(*log.stream) << text;
 	}
 

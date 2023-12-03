@@ -25,13 +25,13 @@ namespace FST {
 	};
 
 	struct FST {
-		char* string; // цепочка
+		std::vector<char>string; // цепочка
 		short position; // текущая позиция в цепочке
 		short nstates; // количество состояний
 		NODE* nodes; // граф вереходов
 		short* rstates; // возможные состояния
 		FST(
-			char* s,
+			std::vector<char> s,
 			short ns,
 			NODE n, ...
 		);
@@ -55,8 +55,6 @@ namespace FST {
 	bool execute(
 		FST& fst
 	);
-
-	void Analyzer();
 
 	void Analyze(In::IN in, LT::LexTable& lextable, IT::IdTable& idtable);
 }

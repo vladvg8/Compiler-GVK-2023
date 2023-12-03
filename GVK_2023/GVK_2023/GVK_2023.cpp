@@ -15,6 +15,10 @@ int _tmain(int argc, wchar_t* argv[]) {
 		// Таблица лексем и идентификаторов
 		LT::LexTable lexTable = LT::Create();
 		IT::IdTable idTable = IT::Create();
+		FST::Analyze(in, lexTable, idTable);
+		for (int i = 0; i < lexTable.size; i++) {
+			cout << lexTable.table[i].lexema;
+		}
 
 	}
 	catch (Error::ERROR error) {

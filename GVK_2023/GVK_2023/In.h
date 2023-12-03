@@ -31,7 +31,7 @@ namespace In {
 		int size;
 		int lines;
 		int ignor;
-		wchar_t* text;
+		char* text;
 		int code[256] = IN_CODE_TABLE;
 	};
 	IN getin(wchar_t infile[]);

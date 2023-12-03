@@ -1,5 +1,4 @@
 ﻿  FST.cpp
-D:\Labs\KPO\course work\Compiler-GVK-2023\GVK_2023\GVK_2023\FST.cpp(59,17): warning C4267: инициализация: преобразование из "size_t" в "short"; возможна потеря данных
-  Parm.cpp
-  Создание кода...
+D:\Labs\KPO\course work\Compiler-GVK-2023\GVK_2023\GVK_2023\FST.cpp(61,17): warning C4267: инициализация: преобразование из "size_t" в "short"; возможна потеря данных
+D:\Labs\KPO\course work\Compiler-GVK-2023\GVK_2023\GVK_2023\FST.cpp(1241,25): warning C4018: <: несоответствие типов со знаком и без знака
   GVK_2023.vcxproj -> D:\Labs\KPO\course work\Compiler-GVK-2023\GVK_2023\Debug\GVK_2023.exe

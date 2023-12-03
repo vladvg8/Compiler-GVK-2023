@@ -15,7 +15,7 @@ namespace LT {
 		if (lextable.size + 1 > LT_MAXSIZE) {
 			throw ERROR_THROW(115); // При добавлении лексемы был превышен максимальный размер таблицы лексем(-LT)
 		}
-		lextable.table[lextable.size] = entry;
+		lextable.table.push_back(entry);
 		lextable.size++;
 	}
 

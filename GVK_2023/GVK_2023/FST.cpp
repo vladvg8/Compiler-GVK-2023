@@ -23,7 +23,7 @@ namespace FST {
 		}
 	}
 
-	FST::FST(char* s, short ns, NODE n, ...) {
+	FST::FST(std::vector<char> s, short ns, NODE n, ...) {
 		string = s;
 		nstates = ns;
 		nodes = new NODE[ns];
@@ -46,6 +46,7 @@ namespace FST {
 					if (fst.nodes[i].relations[j].symbol == fst.string[fst.position]) {
 						fst.rstates[fst.nodes[i].relations[j].nnode] = fst.position + 1;
 						rc = true;
+						return rc;
 					}
 				}
 			}
@@ -57,7 +58,7 @@ namespace FST {
 		fst.FSTreturn();
 		short* rstates = new short[fst.nstates];
 		memset(rstates, 0xff, sizeof(short) * fst.nstates);
-		short lstring = strlen(fst.string);
+		short lstring = fst.string.size();
 		bool rc = true;
 		for (int i = 0; i < lstring && rc; i++) {
 			fst.position++;
@@ -68,7 +69,7 @@ namespace FST {
 	}
 
 	void Analyze(In::IN in, LT::LexTable& lextable, IT::IdTable& idtable) {
-		char str[256]{};
+		std::vector<char>str;
 
 		FST lex_hallow(
 			str,
@@ -1136,44 +1137,44 @@ namespace FST {
 		);
 		
 		FSTAssigned FSTarray[] = {
-			FSTAssigned(&lex_byte, IT::BYTE, LEX_BYTE),
-			FSTAssigned(&lex_text, IT::TEXT, LEX_TEXT),
-			FSTAssigned(&lex_symbol, IT::SYMBOL, LEX_SYMBOL),
-			FSTAssigned(&lex_function, (IT::IDDATATYPE)0, LEX_FUNCTION),
-			FSTAssigned(&lex_declare, (IT::IDDATATYPE)0, LEX_DECLARE),
-			FSTAssigned(&lex_return, (IT::IDDATATYPE)0, LEX_RETURN),
-			FSTAssigned(&lex_display, (IT::IDDATATYPE)0, LEX_DISPLAY),
-			FSTAssigned(&lex_main, (IT::IDDATATYPE)0, LEX_MAIN),
+			FSTAssigned(&lex_byte, IT::BYTE, LEX_BYTE),							// 0
+			FSTAssigned(&lex_text, IT::TEXT, LEX_TEXT),							// 1
+			FSTAssigned(&lex_symbol, IT::SYMBOL, LEX_SYMBOL),					// 2
+			FSTAssigned(&lex_function, (IT::IDDATATYPE)0, LEX_FUNCTION),        // 3
+			FSTAssigned(&lex_declare, (IT::IDDATATYPE)0, LEX_DECLARE),          // 4
+			FSTAssigned(&lex_return, (IT::IDDATATYPE)0, LEX_RETURN),			// 5
+			FSTAssigned(&lex_display, (IT::IDDATATYPE)0, LEX_DISPLAY),			// 6
+			FSTAssigned(&lex_main, (IT::IDDATATYPE)0, LEX_MAIN),				// 7
 
-			FSTAssigned(&lex_semicolon, (IT::IDDATATYPE)0, LEX_SEMICOLON),
-			FSTAssigned(&lex_comma, (IT::IDDATATYPE)0, LEX_COMMA),
-			FSTAssigned(&lex_leftbrace, (IT::IDDATATYPE)0, LEX_LEFTBRACE),
-			FSTAssigned(&lex_bracelet, (IT::IDDATATYPE)0, LEX_BRACELET),
-			FSTAssigned(&lex_leftthesis, (IT::IDDATATYPE)0, LEX_LEFTTHESIS),
-			FSTAssigned(&lex_rightthesis, (IT::IDDATATYPE)0, LEX_RIGHTTHESIS),
+			FSTAssigned(&lex_semicolon, (IT::IDDATATYPE)0, LEX_SEMICOLON),		// 8
+			FSTAssigned(&lex_comma, (IT::IDDATATYPE)0, LEX_COMMA),				// 9
+			FSTAssigned(&lex_leftbrace, (IT::IDDATATYPE)0, LEX_LEFTBRACE),		// 10
+			FSTAssigned(&lex_bracelet, (IT::IDDATATYPE)0, LEX_BRACELET),		// 11
+			FSTAssigned(&lex_leftthesis, (IT::IDDATATYPE)0, LEX_LEFTTHESIS),	// 12
+			FSTAssigned(&lex_rightthesis, (IT::IDDATATYPE)0, LEX_RIGHTTHESIS),  // 13
 
-			FSTAssigned(&lex_plus, (IT::IDDATATYPE)0, LEX_PLUS),
-			FSTAssigned(&lex_minus, (IT::IDDATATYPE)0, LEX_MINUS),
-			FSTAssigned(&lex_start, (IT::IDDATATYPE)0, LEX_START),
-			FSTAssigned(&lex_dirslash, (IT::IDDATATYPE)0, LEX_DIRSLASH),
+			FSTAssigned(&lex_plus, (IT::IDDATATYPE)0, LEX_PLUS),				// 14
+			FSTAssigned(&lex_minus, (IT::IDDATATYPE)0, LEX_MINUS),				// 15
+			FSTAssigned(&lex_start, (IT::IDDATATYPE)0, LEX_START),				// 16
+			FSTAssigned(&lex_dirslash, (IT::IDDATATYPE)0, LEX_DIRSLASH),		// 17
 
-			FSTAssigned(&lex_assigment, (IT::IDDATATYPE)0, LEX_ASSIGNMENT),
+			FSTAssigned(&lex_assigment, (IT::IDDATATYPE)0, LEX_ASSIGNMENT),	    // 18
 
-			FSTAssigned(&lex_if, (IT::IDDATATYPE)0, LEX_IF),
-			FSTAssigned(&lex_else, (IT::IDDATATYPE)0, LEX_ELSE),
+			FSTAssigned(&lex_if, (IT::IDDATATYPE)0, LEX_IF),					// 19
+			FSTAssigned(&lex_else, (IT::IDDATATYPE)0, LEX_ELSE),				// 20
 
-			FSTAssigned(&lex_more, (IT::IDDATATYPE)0, LEX_MORE),
-			FSTAssigned(&lex_less, (IT::IDDATATYPE)0, LEX_LESS),
-			FSTAssigned(&lex_equal, (IT::IDDATATYPE)0, LEX_EQUAL),
-			FSTAssigned(&lex_exclamation, (IT::IDDATATYPE)0, LEX_EXCLAMATION),
-			FSTAssigned(&lex_moreEqual, (IT::IDDATATYPE)0, LEX_MOREEQUAL),
-			FSTAssigned(&lex_lessEqual, (IT::IDDATATYPE)0, LEX_LESSEQUAL),
+			FSTAssigned(&lex_more, (IT::IDDATATYPE)0, LEX_MORE),				// 21
+			FSTAssigned(&lex_less, (IT::IDDATATYPE)0, LEX_LESS),				// 22
+			FSTAssigned(&lex_equal, (IT::IDDATATYPE)0, LEX_EQUAL),				// 23
+			FSTAssigned(&lex_exclamation, (IT::IDDATATYPE)0, LEX_EXCLAMATION),  // 24
+			FSTAssigned(&lex_moreEqual, (IT::IDDATATYPE)0, LEX_MOREEQUAL),      // 25
+			FSTAssigned(&lex_lessEqual, (IT::IDDATATYPE)0, LEX_LESSEQUAL),      // 26
 
-			FSTAssigned(&lex_id, (IT::IDDATATYPE)0, LEX_ID),
-			FSTAssigned(&lex_textLiteral, IT::TEXT, LEX_LITERAL),
-			FSTAssigned(&lex_symbolLiteral, IT::SYMBOL, LEX_LITERAL),
-			FSTAssigned(&lex_byteLiteral, IT::BYTE, LEX_LITERAL),
-			FSTAssigned(&lex_logicalLiteral, IT::BOOLEAN, LEX_BOOLEAN)
+			FSTAssigned(&lex_id, (IT::IDDATATYPE)0, LEX_ID),					// 27
+			FSTAssigned(&lex_textLiteral, IT::TEXT, LEX_LITERAL),				// 28
+			FSTAssigned(&lex_symbolLiteral, IT::SYMBOL, LEX_LITERAL),			// 29
+			FSTAssigned(&lex_byteLiteral, IT::BYTE, LEX_LITERAL),				// 30
+			FSTAssigned(&lex_logicalLiteral, IT::BOOLEAN, LEX_BOOLEAN)			// 31
 		};
 		
 		int FSTarrayLen = 32;
@@ -1181,27 +1182,86 @@ namespace FST {
 		IT::IDDATATYPE iddatatype = (IT::IDDATATYPE)0;
 		IT::IDTYPE idtype = (IT::IDTYPE)0;
 
-		bool isMainDefined = false;
+		int numberOfMainDefine = 0;
+		int numberOfLexems = 0;
 		
 		int indexOfSymbols = 0;
-		wchar_t ch = in.text[indexOfSymbols];
-
-		int numberOfLexems = 0;
-		std::vector<wchar_t> word;
+		char ch = in.text[indexOfSymbols];
+		int line = 0;
+		std::vector<char>word;
 
 		while (ch != '\0') {
-			if (ch == '\'' || ch == '"') { // находим символьный или строковый литерал
-				wchar_t exepcedSymbol = ch;
+			if (ch == '\n') {
+				line += 1;
+				indexOfSymbols += 1;
+				ch = in.text[indexOfSymbols];
+				word.clear();
+			}
+			if (ch == '\'' || ch == '\"') { // находим символьный или строковый литерал
+				word.clear();
+				wchar_t exepctedSymbol = ch;
 				word.push_back(ch);
 				indexOfSymbols += 1;
 				ch = in.text[indexOfSymbols];
-				while (ch != exepcedSymbol) {
-					word.push_back(ch);
+				word.push_back(ch);
+				while (ch != exepctedSymbol) {
 					indexOfSymbols += 1;
 					ch = in.text[indexOfSymbols];
+					word.push_back(ch);
 				}
-				numberOfLexems += 1;
+				
+				
+				str.clear();
+				str = word;
+				if (exepctedSymbol == '\"') {
+					FSTarray[28].fst->string = str;
+					if (execute(*FSTarray[28].fst)) {
+						LT::Entry entry = LT::Entry(FSTarray[28].lex, line, IT::TEXT);
+						LT::AddEntry(lextable, entry);
+						numberOfLexems += 1;
+					}
+				}
+				if (exepctedSymbol == '\'') {
+					FSTarray[29].fst->string = str;
+					if (execute(*FSTarray[29].fst)) {
+						LT::Entry entry = LT::Entry(FSTarray[29].lex, line, IT::SYMBOL);
+						LT::AddEntry(lextable, entry);
+						numberOfLexems += 1;
+					}
+				}
+				word.clear();
 			}
+			else {
+				if (ch == ' ' || ch == ';' || ch == '\n' || ch == '+' || ch == ',' || ch == '-' ||
+					ch == '<' || ch == '>' || ch == '=' || ch == '!' || ch == ':' || ch == '(' ||
+					ch == ')' || ch == '{' || ch == '}') {
+					if (word.size() > 1) {
+						std::vector<char> stop_symbols = { ' ', ';', '+', ':', '<', '>', '\n',',','!', '=', '-', '(', ')', '{', '}'};
+						std::vector<char> new_word;
+						for (int i = 0; i < word.size(); i++) {
+							// Проверяем, является ли текущий символ стоп-символом
+							if (!(std::find(stop_symbols.begin(), stop_symbols.end(), word[i]) != stop_symbols.end())) {
+								new_word.push_back(word[i]);
+							}
+						}
+						word = new_word;
+					}
+					str.clear();
+					str = word;
+					for (int i = 0; i < FSTarrayLen; i++) {
+						FSTarray[i].fst->string = str;
+						if (execute(*FSTarray[i].fst)) {
+							LT::Entry entry = LT::Entry(FSTarray[i].lex, line, 0x00);
+							LT::AddEntry(lextable, entry);
+							break;
+						}
+					}
+					word.clear();
+				}
+			}
+			word.push_back(ch);
+			indexOfSymbols += 1;
+			ch = in.text[indexOfSymbols];
 		}
 	}
 }

@@ -2,20 +2,26 @@
 #include "In.h"
 #include "Error.h"
 #include <fstream>
+#include <sstream>
 #include <iostream>
+#include <ios>
 
 using namespace std;
 
 namespace In {
 	IN getin(wchar_t infile[]) {
-		std::wifstream fin(infile);
+		std::fstream fin(infile);
 		if (!fin) {
 			throw ERROR_THROW(110); // Ошибка при открытии файла с исходным кодом (-in)
 		}
-		fin.imbue(std::locale("ru_RU.UTF-8")); // правила чтения ru_RU.UTF-8
-		fin.seekg(0, std::ios_base::end);      // перемещаемся в конец файла
-		int size = (int)fin.tellg();		   // количество символов
-		fin.seekg(0, std::ios_base::beg);	   // возвращаемся в начало файла
+		fin.imbue(std::locale("ru_RU.UTF-8"));
+		std::stringstream buffer;
+		buffer << fin.rdbuf();
+		string test = buffer.str();
+		int size = test.size();
+		fin.clear();
+		fin.seekg(0, std::ios::beg);
+
 		if (size > IN_MAX_LEN_TEXT) {
 			throw ERROR_THROW(112);
 		}
@@ -24,20 +30,16 @@ namespace In {
 		in.size = 0;
 		in.lines = 1;
 		in.ignor = 0;
-		in.text = new wchar_t[size] {};
+		in.text = new char[size] {};
 
 		int col = 1;
-		wchar_t prev = NULL;
-		wchar_t ch;
+		char prev = NULL;
+		char ch;
 		while ((ch = fin.get()) != '\0' && !fin.fail()) {
 			if (ch == L' ' && prev == L' ' || ch == L' ' && prev == NULL) {
 				continue;
 			}
-			wchar_t wstr[3]{};
-			wstr[0] = ch;
-			char str[3]{};
-			wcstombs(str, wstr, sizeof(wstr));
-			int ich = (int)str[0];
+			int ich = (int)ch;
 			if (ich < 0) {
 				ich = ich + 256;
 			}

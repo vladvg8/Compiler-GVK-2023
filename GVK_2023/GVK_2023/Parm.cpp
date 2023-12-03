@@ -1,24 +1,29 @@
 #include "stdafx.h"
 
+// длина начал параметров 
+#define PARM_IN 4   // -in:
+#define PARM_LOG 5  // -log:
+#define PARM_OUT 5  // -out:
+
 namespace Parm {
 	PARM getparm(int argc, wchar_t* argv[]) {
-		bool isIn = 0, isOut = 0, isLog = 0;
+		bool isIn = false, isOut = false, isLog = false;
 		PARM parms;
 		for (int i = 1; i < argc; i++) {
 			if (wcslen(argv[i]) > PARM_MAX_SIZE) {
 				throw ERROR_THROW(104); // Превышена длина входного параметра
 			}
 			if (wcsstr(argv[i], PATH_IN)) {
-				isIn = 1;
-				wcscpy_s(parms.in, argv[i] + 4);
+				isIn = true;
+				wcscpy_s(parms.in, argv[i] + PARM_IN);
 			}
 			if (wcsstr(argv[i], PATH_OUT)) {
-				isOut = 1;
-				wcscpy_s(parms.out, argv[i] + 5);
+				isOut = true;
+				wcscpy_s(parms.out, argv[i] + PARM_LOG);
 			}
 			if (wcsstr(argv[i], PATH_LOG)) {
-				isLog = 1;
-				wcscpy_s(parms.log, argv[i] + 5);
+				isLog = true;
+				wcscpy_s(parms.log, argv[i] + PARM_OUT);
 			}
 		};
 		if (!isIn) {
