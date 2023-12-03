@@ -81,6 +81,8 @@ namespace In {
 			prev = ch;
 		}
 		fin.close();
+		in.text[in.size] = ' ';
+		in.size++;
 		return in;
 	}
 

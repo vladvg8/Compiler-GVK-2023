@@ -68,6 +68,26 @@ namespace FST {
 		return (rc ? (fst.rstates[fst.nstates - 1] == lstring) : rc);
 	}
 
+	bool isSymbolIsStopSymbol(char ch) {
+		char stopSymbols[] = {
+			' ', ';', ':', ',', '(', '{', '}',')', '=', '!', '<', '>', '\'', '\"', '\n'
+		};
+		int numberOfStopSymbols = 15;
+		for (int i = 0; i < numberOfStopSymbols; i++) {
+			if (ch == stopSymbols[i]) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	void show(std::vector<char>buff) {
+		for (int i = 0; i < buff.size(); i++) {
+			std::cout << buff[i];
+		}
+		std::cout << std::endl;
+	}
+
 	void Analyze(In::IN in, LT::LexTable& lextable, IT::IdTable& idtable) {
 		std::vector<char>str;
 
@@ -1184,84 +1204,60 @@ namespace FST {
 
 		int numberOfMainDefine = 0;
 		int numberOfLexems = 0;
-		
-		int indexOfSymbols = 0;
-		char ch = in.text[indexOfSymbols];
+		bool inLiteral = false;
+		char expectedSymbol;
+		bool isPrevWasStopSymbol = false;
+
+		char ch;
 		int line = 0;
 		std::vector<char>word;
+		
+ 		for (int i = 0; i < in.size; i++) {
+			ch = in.text[i];
 
-		while (ch != '\0') {
 			if (ch == '\n') {
 				line += 1;
-				indexOfSymbols += 1;
-				ch = in.text[indexOfSymbols];
-				word.clear();
+				i += 1;
 			}
-			if (ch == '\'' || ch == '\"') { // находим символьный или строковый литерал
-				word.clear();
-				wchar_t exepctedSymbol = ch;
-				word.push_back(ch);
-				indexOfSymbols += 1;
-				ch = in.text[indexOfSymbols];
-				word.push_back(ch);
-				while (ch != exepctedSymbol) {
-					indexOfSymbols += 1;
-					ch = in.text[indexOfSymbols];
-					word.push_back(ch);
-				}
-				
-				
-				str.clear();
-				str = word;
-				if (exepctedSymbol == '\"') {
-					FSTarray[28].fst->string = str;
-					if (execute(*FSTarray[28].fst)) {
-						LT::Entry entry = LT::Entry(FSTarray[28].lex, line, IT::TEXT);
-						LT::AddEntry(lextable, entry);
-						numberOfLexems += 1;
+
+			if (isSymbolIsStopSymbol(ch)) {
+				if (ch == '\'' || ch == '\"') {
+					if (inLiteral) {
+						if (ch == expectedSymbol) {
+							inLiteral = false;
+							word.push_back(ch);
+							str.clear();
+							str = word;
+							// кинуть в execute
+							show(word);
+							word.clear();
+						}
+						else {
+							throw ERROR_THROW(126);
+						}
+					}
+					else {
+						inLiteral = true;
+						expectedSymbol = ch;
+						word.push_back(ch);
 					}
 				}
-				if (exepctedSymbol == '\'') {
-					FSTarray[29].fst->string = str;
-					if (execute(*FSTarray[29].fst)) {
-						LT::Entry entry = LT::Entry(FSTarray[29].lex, line, IT::SYMBOL);
-						LT::AddEntry(lextable, entry);
-						numberOfLexems += 1;
+				else {
+					if (inLiteral) {
+						word.push_back(ch);
+					}
+					else {
+						str.clear();
+						str = word;
+						// кидаем в execute
+						show(word);
+						word.clear();
 					}
 				}
-				word.clear();
 			}
 			else {
-				if (ch == ' ' || ch == ';' || ch == '\n' || ch == '+' || ch == ',' || ch == '-' ||
-					ch == '<' || ch == '>' || ch == '=' || ch == '!' || ch == ':' || ch == '(' ||
-					ch == ')' || ch == '{' || ch == '}') {
-					if (word.size() > 1) {
-						std::vector<char> stop_symbols = { ' ', ';', '+', ':', '<', '>', '\n',',','!', '=', '-', '(', ')', '{', '}'};
-						std::vector<char> new_word;
-						for (int i = 0; i < word.size(); i++) {
-							// Проверяем, является ли текущий символ стоп-символом
-							if (!(std::find(stop_symbols.begin(), stop_symbols.end(), word[i]) != stop_symbols.end())) {
-								new_word.push_back(word[i]);
-							}
-						}
-						word = new_word;
-					}
-					str.clear();
-					str = word;
-					for (int i = 0; i < FSTarrayLen; i++) {
-						FSTarray[i].fst->string = str;
-						if (execute(*FSTarray[i].fst)) {
-							LT::Entry entry = LT::Entry(FSTarray[i].lex, line, 0x00);
-							LT::AddEntry(lextable, entry);
-							break;
-						}
-					}
-					word.clear();
-				}
+				word.push_back(ch);
 			}
-			word.push_back(ch);
-			indexOfSymbols += 1;
-			ch = in.text[indexOfSymbols];
 		}
 	}
 }

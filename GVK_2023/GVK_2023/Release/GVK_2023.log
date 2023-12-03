@@ -1,0 +1,14 @@
+﻿  Error.cpp
+  FST.cpp
+D:\Labs\KPO\course work\Compiler-GVK-2023\GVK_2023\GVK_2023\FST.cpp(61,17): warning C4267: инициализация: преобразование из "size_t" в "short"; возможна потеря данных
+  GVK_2023.cpp
+  In.cpp
+  IT.cpp
+  Log.cpp
+  LT.cpp
+  Parm.cpp
+  Создание кода
+  Previous IPDB not found, fall back to full compilation.
+  All 360 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
+  Создание кода завершено
+  GVK_2023.vcxproj -> D:\Labs\KPO\course work\Compiler-GVK-2023\GVK_2023\Release\GVK_2023.exe

@@ -1,3 +1,3 @@
-declare byte function() {
-	display("hello, World!");
+if (number == 1) {
+display();
 }
