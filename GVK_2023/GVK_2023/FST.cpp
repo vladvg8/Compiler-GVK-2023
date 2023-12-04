@@ -4,7 +4,7 @@
 #include "Error.h"
 
 namespace FST {
-	RELATION::RELATION(char c, short ns) {
+	RELATION::RELATION(char c, unsigned short ns) {
 		symbol = c;
 		nnode = ns;
 	}
@@ -14,7 +14,7 @@ namespace FST {
 		RELATION* relations = NULL;
 	};
 
-	NODE::NODE(short n, RELATION rel, ...) {
+	NODE::NODE(unsigned short n, RELATION rel, ...) {
 		n_relation = n;
 		RELATION* p = &rel;
 		relations = new RELATION[n];
@@ -23,21 +23,20 @@ namespace FST {
 		}
 	}
 
-	FST::FST(std::vector<char> s, short ns, NODE n, ...) {
+	FST::FST(std::vector<char> s, unsigned short ns, NODE n, ...) {
 		string = s;
 		nstates = ns;
-		nodes = new NODE[ns];
 		NODE* p = &n;
 		for (int i = 0; i < ns; i++) {
-			nodes[i] = p[i];
+			nodes.push_back(p[i]);
 		};
-		rstates = new short[nstates];
+		rstates = new unsigned short[nstates];
 		memset(rstates, 0xff, sizeof(short) * nstates);
 		rstates[0] = 0;
 		position = -1;
 	};
 
-	bool step(FST& fst, short*& rstates) {
+	bool step(FST& fst, unsigned short*& rstates) {
 		bool rc = false;
 		std::swap(rstates, fst.rstates);
 		for (int i = 0; i < fst.nstates; i++) {
@@ -53,16 +52,16 @@ namespace FST {
 		}
 		return rc;
 	}
-
+	
 	bool execute(FST& fst) {
 		fst.FSTreturn();
-		short* rstates = new short[fst.nstates];
-		memset(rstates, 0xff, sizeof(short) * fst.nstates);
-		short lstring = fst.string.size();
+		unsigned short* rstates = new unsigned short[fst.nstates];
+		memset(rstates, 0xff, sizeof(unsigned short) * fst.nstates);
+		unsigned short lstring = fst.string.size();
 		bool rc = true;
 		for (int i = 0; i < lstring && rc; i++) {
 			fst.position++;
-			rc = step(fst, rstates);
+			rc = step(fst, (*&rstates));
 		};
 		delete[] rstates;
 		return (rc ? (fst.rstates[fst.nstates - 1] == lstring) : rc);
@@ -70,9 +69,9 @@ namespace FST {
 
 	bool isSymbolIsStopSymbol(char ch) {
 		char stopSymbols[] = {
-			' ', ';', ':', ',', '(', '{', '}',')', '=', '!', '<', '>', '\'', '\"', '\n'
+			' ', ';', ':', ',', '(', '{', '}',')', '=', '!', '<', '>', '\'', '\"', '\n', '+', '-', '/', '*'
 		};
-		int numberOfStopSymbols = 15;
+		int numberOfStopSymbols = 19;
 		for (int i = 0; i < numberOfStopSymbols; i++) {
 			if (ch == stopSymbols[i]) {
 				return true;
@@ -86,6 +85,32 @@ namespace FST {
 			std::cout << buff[i];
 		}
 		std::cout << std::endl;
+	}
+
+	void executeWordAndClear(std::vector<char>&word, std::vector<char> &str, std::vector<FSTAssigned> &FSTarray) {
+		for (int i = 0; i < word.size(); i++) {
+			if (word[i] == ' ' || word[i] == '\n' || word[i] == '\t') {
+				word.erase(word.begin() + i);
+				i = 0;
+			}
+		}
+		if (word.empty()) {
+			return;
+		}
+		str.clear();
+		str = word;
+		for (int i = 0; i < FSTarray.size(); i++) {
+			FSTarray[i].fst->string = str;
+			if (execute(*FSTarray[i].fst)) {
+				// тут мы проверяем
+				std::cout << FSTarray[i].lex;
+				word.clear();
+				return;
+			}
+		}
+		// throw ERROR_THROW(119); // не удалось разобрать
+		// show(word);
+		word.clear();
 	}
 
 	void Analyze(In::IN in, LT::LexTable& lextable, IT::IdTable& idtable) {
@@ -1118,16 +1143,6 @@ namespace FST {
 			NODE()
 		);
 
-		FST lex_logicalLiteral(
-			str,
-			2,
-			NODE(2,
-				RELATION('0', 0),
-				RELATION('1', 0)
-			),
-			NODE()
-		);
-
 		FST lex_byteLiteral(
 			str,
 			2,
@@ -1156,7 +1171,7 @@ namespace FST {
 			NODE()
 		);
 		
-		FSTAssigned FSTarray[] = {
+		std::vector<FSTAssigned> FSTarray = {
 			FSTAssigned(&lex_byte, IT::BYTE, LEX_BYTE),							// 0
 			FSTAssigned(&lex_text, IT::TEXT, LEX_TEXT),							// 1
 			FSTAssigned(&lex_symbol, IT::SYMBOL, LEX_SYMBOL),					// 2
@@ -1193,11 +1208,10 @@ namespace FST {
 			FSTAssigned(&lex_id, (IT::IDDATATYPE)0, LEX_ID),					// 27
 			FSTAssigned(&lex_textLiteral, IT::TEXT, LEX_LITERAL),				// 28
 			FSTAssigned(&lex_symbolLiteral, IT::SYMBOL, LEX_LITERAL),			// 29
-			FSTAssigned(&lex_byteLiteral, IT::BYTE, LEX_LITERAL),				// 30
-			FSTAssigned(&lex_logicalLiteral, IT::BOOLEAN, LEX_BOOLEAN)			// 31
+			FSTAssigned(&lex_byteLiteral, IT::BYTE, LEX_LITERAL)				// 30
 		};
 		
-		int FSTarrayLen = 32;
+		int FSTarrayLen = 31;
 
 		IT::IDDATATYPE iddatatype = (IT::IDDATATYPE)0;
 		IT::IDTYPE idtype = (IT::IDTYPE)0;
@@ -1208,6 +1222,7 @@ namespace FST {
 		char expectedSymbol;
 		bool isPrevWasStopSymbol = false;
 
+		char nextSymbol = '\0';
 		char ch;
 		int line = 0;
 		std::vector<char>word;
@@ -1217,7 +1232,6 @@ namespace FST {
 
 			if (ch == '\n') {
 				line += 1;
-				i += 1;
 			}
 
 			if (isSymbolIsStopSymbol(ch)) {
@@ -1226,11 +1240,7 @@ namespace FST {
 						if (ch == expectedSymbol) {
 							inLiteral = false;
 							word.push_back(ch);
-							str.clear();
-							str = word;
-							// кинуть в execute
-							show(word);
-							word.clear();
+							executeWordAndClear(word, str, FSTarray);
 						}
 						else {
 							throw ERROR_THROW(126);
@@ -1239,6 +1249,9 @@ namespace FST {
 					else {
 						inLiteral = true;
 						expectedSymbol = ch;
+
+						executeWordAndClear(word, str, FSTarray);
+
 						word.push_back(ch);
 					}
 				}
@@ -1246,12 +1259,42 @@ namespace FST {
 					if (inLiteral) {
 						word.push_back(ch);
 					}
-					else {
-						str.clear();
-						str = word;
-						// кидаем в execute
-						show(word);
-						word.clear();
+					else {	
+						executeWordAndClear(word, str, FSTarray);
+
+						if (ch != ' ' && ch != '\n' && ch != '\'' || ch != '\"') {
+							if (ch == '<' || ch == '>' || ch == '!' || ch == '=') {
+								if (i == in.size - 1) {
+									word.push_back(ch);
+
+									executeWordAndClear(word, str, FSTarray);
+								}
+								else {
+									nextSymbol = in.text[i + 1];
+									if (nextSymbol == '=') {
+										word.push_back(ch);
+										word.push_back(nextSymbol);
+
+										executeWordAndClear(word, str, FSTarray);
+
+										i++;
+									}
+									else {
+										word.push_back(ch);
+
+										executeWordAndClear(word, str, FSTarray);
+									}
+								}
+							}
+							else {
+								word.push_back(ch);
+
+								executeWordAndClear(word, str, FSTarray);
+							}
+						}
+						else {
+							
+						}
 					}
 				}
 			}

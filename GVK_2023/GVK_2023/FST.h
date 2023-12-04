@@ -7,32 +7,32 @@
 namespace FST {
 	struct RELATION { // ребро
 		char symbol;
-		short nnode; // смежная вершина
+		unsigned short nnode; // смежная вершина
 		RELATION(
 			char c = 0x00,
-			short ns = NULL
+			unsigned short ns = NULL
 		);
 	};
 
 	struct NODE { // вершина (состояние)
-		short n_relation; // количество инцидентных ребер
+		unsigned short n_relation; // количество инцидентных ребер
 		RELATION* relations; // ребра
 		NODE();
 		NODE(
-			short n,
+			unsigned short n,
 			RELATION rel, ...
 		);
 	};
 
 	struct FST {
 		std::vector<char>string; // цепочка
-		short position; // текущая позиция в цепочке
-		short nstates; // количество состояний
-		NODE* nodes; // граф вереходов
-		short* rstates; // возможные состояния
+		unsigned short position; // текущая позиция в цепочке
+		unsigned short nstates; // количество состояний
+		std::vector<NODE> nodes; // граф вереходов
+		unsigned short* rstates; // возможные состояния
 		FST(
 			std::vector<char> s,
-			short ns,
+			unsigned short ns,
 			NODE n, ...
 		);
 		void FSTreturn() {

@@ -1,3 +1,1 @@
-if (number == 1) {
-display();
-}
+decl
