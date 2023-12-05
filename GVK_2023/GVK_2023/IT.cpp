@@ -13,7 +13,7 @@ namespace IT {
 		if (idtable.size + 1 > TI_MAXSIZE) {
 			throw ERROR_THROW(117); // При добавлении инентификатора был превышен максимальный размер таблицы идентификаторов(IT)
 		}
-		idtable.table[idtable.size] = entry;
+		idtable.table.push_back(entry);
 		idtable.size++;
 	}
 

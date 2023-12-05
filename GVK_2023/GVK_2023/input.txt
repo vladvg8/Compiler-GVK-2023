@@ -1,1 +1,14 @@
-decl
+declare byte function sayHello() {
+	return 1;
+}
+
+main {
+	display("Hello, World!");
+	if (1) {
+		display("Hello, World!");
+	} else {
+
+	}
+	declare byte number:123;
+	number: number + 1;
+}

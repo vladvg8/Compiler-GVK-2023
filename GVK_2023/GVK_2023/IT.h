@@ -52,6 +52,7 @@ namespace IT {
 			if (nameSize > ID_MAXSIZE) {
 				throw ERROR_THROW(125);
 			}
+			//name[nameSize] = '\0';
 			strncpy_s(id, name, ID_MAXSIZE);
 			id[ID_MAXSIZE] = '\0';
 			this->iddatatype = iddatatype;

@@ -1,5 +1,7 @@
 #include "FST.h"
 #include "LT.h"
+#include "IT.h"
+#include <string>
 #include <vector>
 #include "Error.h"
 
@@ -61,7 +63,7 @@ namespace FST {
 		bool rc = true;
 		for (int i = 0; i < lstring && rc; i++) {
 			fst.position++;
-			rc = step(fst, (*&rstates));
+			rc = step(fst, rstates);
 		};
 		delete[] rstates;
 		return (rc ? (fst.rstates[fst.nstates - 1] == lstring) : rc);
@@ -87,31 +89,299 @@ namespace FST {
 		std::cout << std::endl;
 	}
 
-	void executeWordAndClear(std::vector<char>&word, std::vector<char> &str, std::vector<FSTAssigned> &FSTarray) {
-		for (int i = 0; i < word.size(); i++) {
-			if (word[i] == ' ' || word[i] == '\n' || word[i] == '\t') {
-				word.erase(word.begin() + i);
-				i = 0;
-			}
+	struct Lexema {
+		std::vector<char> word;
+		int line;
+		int col;
+		int idxTI;
+		Lexema(std::vector<char>word, int line, int col, int idxTI) {
+			this->word = word;
+			this->line = line;
+			this->col = col;
+			this->idxTI = idxTI;
 		}
+	};
+
+	std::vector<Lexema>lexems;
+
+	int numberOfMainDefine = -1;
+
+	void executeWordAndClear(std::vector<char>&word, std::vector<char> &str, std::vector<FSTAssigned> &FSTarray, 
+		int line, int &col, LT::LexTable& lextable, IT::IdTable& idtable) {
+
+		word.erase(word.begin(), std::find_if(word.begin(), word.end(), [](char c) {
+			return !std::isspace(c);
+			}));
+
+		// Удаляем пробельные символы с конца вектора
+		word.erase(std::find_if(word.rbegin(), word.rend(), [](char c) {
+			return !std::isspace(c);
+			}).base(), word.end());
 		if (word.empty()) {
+			word.clear();
 			return;
 		}
 		str.clear();
 		str = word;
+		
 		for (int i = 0; i < FSTarray.size(); i++) {
 			FSTarray[i].fst->string = str;
 			if (execute(*FSTarray[i].fst)) {
-				// тут мы проверяем
-				std::cout << FSTarray[i].lex;
+				col += 1;
+				Lexema lexema = Lexema(word, line, col, 0xffffffff);
+				lexems.push_back(lexema); // если слово разобрали кидаем его в дальнейшую обработку
+
+				if (FSTarray[i].lex == LEX_MAIN) {
+					numberOfMainDefine += 1;
+				}
+				if (numberOfMainDefine > 1) {
+					throw ERROR_THROW(121); // количество main > 1
+				}
+
 				word.clear();
 				return;
 			}
 		}
-		// throw ERROR_THROW(119); // не удалось разобрать
-		// show(word);
+		throw ERROR_THROW(119); // не удалось разобрать
 		word.clear();
 	}
+
+	void AnalyzerWords(std::vector<FSTAssigned> FSTarray, LT::LexTable& lextable, IT::IdTable& idtable) {
+
+		bool isExecuted = false;
+		bool isDeclared = false;
+		bool isParam = false;
+		bool isWasFunc = false;
+		bool isWasMain = false;
+		bool isFuncStarted = false;
+
+		std::string ParentName;
+		std::vector<std::string> parentStack;
+		parentStack.push_back("\0");
+
+		IT::IDDATATYPE iddatatype = (IT::IDDATATYPE)0;
+		IT::IDTYPE idtype = (IT::IDTYPE)0;
+
+		for (int i = 0; i < lexems.size(); i++) {
+			for (int j = 0; j < FSTarray.size(); j++) {
+				FSTarray[j].fst->string = lexems[i].word; // берем слово
+				if (execute(*FSTarray[j].fst)) {
+					isExecuted = true;
+					LT::Entry LTObj(FSTarray[j].lex, lexems[i].line, lexems[i].col, 0xffffffff);
+					//if (isFuncStarted && FSTarray[j].lex != LEX_LEFTBRACE) {
+					//	throw ERROR_THROW_IN(126, lex.line, lex.col);
+					//}
+					switch (FSTarray[j].lex)
+					{
+					case LEX_DECLARE:
+					{
+						isDeclared = true;
+						idtype = IT::VARIABLE;
+						break;
+					}
+					case LEX_TEXT: // не понимаю
+					{
+						if (FSTarray[j].iddatatype == IT::BYTE) {
+							iddatatype = IT::BYTE;
+						}
+						else if (FSTarray[j].iddatatype == IT::TEXT) {
+							iddatatype = IT::TEXT;
+						}
+						else  if (FSTarray[j].iddatatype == IT::SYMBOL) {
+							iddatatype = IT::SYMBOL;
+						}
+						else  if (FSTarray[j].iddatatype == IT::BOOLEAN) {
+							iddatatype = IT::BOOLEAN;
+						}
+						else  if (FSTarray[j].iddatatype == IT::HALLOW) {
+							iddatatype = IT::HALLOW;
+						}
+						else {
+							iddatatype = (IT::IDDATATYPE)0;
+						}
+						break;
+					}
+					case LEX_FUNCTION:
+					{
+						idtype = IT::FUNCTION;
+						break;
+					}
+					case LEX_DISPLAY:
+					{
+						break;
+					}
+					case LEX_RETURN:
+					{
+						break;
+					}
+					case LEX_ID:
+					{
+						std::string scope;
+						char* strr = new char[lexems[i].word.size()];
+						for (int g = 0; g < lexems[i].word.size(); g++) {
+							strr[g] = lexems[i].word[g];
+						}
+						strr[lexems[i].word.size()] = '\0';
+						if (IT::IsId(idtable, strr) != TI_NULLIDX && IT::GetEntry(idtable, IT::IsId(idtable, strr)).idtype == (IT::FUNCTION)) {
+							scope += strr;
+						}
+						else {
+							for (int j = 0; j < parentStack.size(); j++) {
+								scope += parentStack.at(j);
+							}
+							scope += strr;
+						}
+						if (IT::IsId(idtable, (char*)scope.c_str()) == TI_NULLIDX) {
+							if (idtype != IT::PARAMETER && !isDeclared) {
+								throw ERROR_THROW_IN(124, lexems[i].line, lexems[i].col);
+							}
+							if (iddatatype != (IT::IDDATATYPE)0 && idtype != (IT::IDTYPE)0) {
+								if (idtype == IT::FUNCTION) {
+									ParentName = strr;
+								}
+								IT::Entry IDTObj(lextable.size, (char*)scope.c_str(), iddatatype, idtype);
+								if (iddatatype == IT::BYTE) {
+									IDTObj.value.vbyte = 0;
+								}
+								if (iddatatype == IT::BOOLEAN) {
+									IDTObj.value.vboolean = 0;
+								}
+								if (iddatatype == IT::HALLOW) {
+									IDTObj.value.vboolean = 0;
+								}
+								else {
+									for (int i = 0; i < TI_TEXT_MAXSIZE; i++) {
+										IDTObj.value.vtext->str[i] = '\0';
+									}
+								}
+								IT::Add(idtable, IDTObj);
+								LTObj.idxTI = idtable.size - 1;
+								isDeclared = false;
+							}
+							else {
+								throw ERROR_THROW_IN(121, lexems[i].line, lexems[i].col);
+							}
+							if (!isParam) {
+								idtype = (IT::IDTYPE)0;
+								iddatatype = (IT::IDDATATYPE)0;
+							}
+						}
+						else {
+							LTObj.idxTI = IT::IsId(idtable, (char*)scope.c_str());
+						}
+						break;
+					}
+					case LEX_LEFTTHESIS:
+					{
+						if (!isFuncStarted) {
+
+						}
+						if (lextable.table[lextable.size - 1].lexema == LEX_MAIN) {
+							throw ERROR_THROW_IN(125, lexems[i].line, lexems[i].col);
+						}
+						if (lextable.size != 0 && lextable.table[lextable.size - 1].idxTI != TI_NULLIDX && idtable.table[lextable.table[lextable.size - 1].idxTI].idtype == IT::FUNCTION) {
+							if (lextable.table[lextable.size - 4].lexema == LEX_DECLARE) {
+								isParam = true;
+								idtype = IT::PARAMETER;
+								parentStack.push_back(ParentName);
+							}
+							else {
+								isParam = false;
+							}
+						}
+						break;
+					}
+					case LEX_RIGHTTHESIS:
+					{
+						if (isParam) {
+							parentStack.pop_back();
+							isParam = false;
+							isWasFunc = true;
+							isFuncStarted = false;
+						}
+						idtype = (IT::IDTYPE)0;
+						iddatatype = (IT::IDDATATYPE)0;
+						break;
+					}
+					case LEX_LEFTBRACE:
+					{
+						if (!isFuncStarted) {
+							isFuncStarted = true;
+						}
+						if (lextable.table[lextable.size - 1].lexema == LEX_RIGHTTHESIS && isWasFunc) {
+							parentStack.push_back(ParentName);
+						}
+						break;
+					}
+					case LEX_BRACELET:
+					{
+						if (isWasFunc) {
+							isWasFunc = false;
+							parentStack.pop_back();
+						}
+						break;
+					}
+					case LEX_MAIN:
+					{
+						if (!isWasMain) {
+							isWasMain = true;
+							parentStack.push_back("main");
+						}
+						else {
+							throw ERROR_THROW_IN(122, lexems[i].line, lexems[i].col);
+						}
+						break;
+					}
+					case LEX_LITERAL:
+					{
+						if (lexems[i].word[0] == '\"') {
+							iddatatype = IT::TEXT;
+						}
+						else if (lexems[i].word[0] == '\'') {
+							iddatatype = IT::SYMBOL;
+						}
+						else {
+							iddatatype = IT::BYTE;
+						}
+						idtype = IT::IDTYPE::LITERAL;
+						LTObj.idxTI = idtable.size;
+						IT::Entry ITObj;
+						ITObj.iddatatype = iddatatype;
+						ITObj.idtype = idtype;
+						ITObj.idxfirstLE = lextable.size;
+						for (int i = 0; i < 12; i++) {
+							ITObj.id[i] = '\0';
+						}
+						int cur = 0;
+						while (lexems[i].word.size() > cur) {
+							ITObj.id[cur] = lexems[i].word[cur];
+							cur++;
+						}
+						ITObj.id[cur] = '\0';
+						IT::Add(idtable, ITObj);
+						break;
+					}
+					}
+					if (LTObj.lexema == LEX_MINUS || LTObj.lexema == LEX_MORE || LTObj.lexema == LEX_LEFTBRACE || LTObj.lexema == LEX_BRACELET || LTObj.lexema == LEX_LEFTTHESIS || LTObj.lexema == LEX_RIGHTTHESIS) {
+						char* strr = new char[lexems[i].word.size()];
+						for (int g = 0; g < lexems[i].word.size(); g++) {
+							strr[g] = lexems[i].word[g];
+						}
+						LTObj.data = strr[0];
+					}
+					LT::AddEntry(lextable, LTObj);
+					j = FSTarray.size();
+				}
+			}
+			if (!isExecuted) {
+				throw ERROR_THROW_IN(120, lexems[i].line, lexems[i].col);
+			}
+		}
+		if (!isWasMain) {
+			throw ERROR_THROW(123);
+		}
+	}
+
 
 	void Analyze(In::IN in, LT::LexTable& lextable, IT::IdTable& idtable) {
 		std::vector<char>str;
@@ -359,8 +629,8 @@ namespace FST {
 
 		FST lex_id(
 			str,
-			3,
-			NODE(106,
+			2,
+			NODE(52,
 				RELATION('a', 1),
 				RELATION('b', 1),
 				RELATION('c', 1),
@@ -412,63 +682,9 @@ namespace FST {
 				RELATION('W', 1),
 				RELATION('X', 1),
 				RELATION('Y', 1),
-				RELATION('Z', 1),
-				RELATION('_', 1),
-				RELATION('a', 2),
-				RELATION('b', 2),
-				RELATION('c', 2),
-				RELATION('d', 2),
-				RELATION('e', 2),
-				RELATION('f', 2),
-				RELATION('g', 2),
-				RELATION('h', 2),
-				RELATION('i', 2),
-				RELATION('j', 2),
-				RELATION('k', 2),
-				RELATION('l', 2),
-				RELATION('m', 2),
-				RELATION('n', 2),
-				RELATION('o', 2),
-				RELATION('p', 2),
-				RELATION('q', 2),
-				RELATION('r', 2),
-				RELATION('s', 2),
-				RELATION('t', 2),
-				RELATION('u', 2),
-				RELATION('v', 2),
-				RELATION('w', 2),
-				RELATION('x', 2),
-				RELATION('y', 2),
-				RELATION('z', 2),
-				RELATION('A', 2),
-				RELATION('B', 2),
-				RELATION('C', 2),
-				RELATION('D', 2),
-				RELATION('E', 2),
-				RELATION('F', 2),
-				RELATION('G', 2),
-				RELATION('H', 2),
-				RELATION('I', 2),
-				RELATION('J', 2),
-				RELATION('K', 2),
-				RELATION('L', 2),
-				RELATION('M', 2),
-				RELATION('N', 2),
-				RELATION('O', 2),
-				RELATION('P', 2),
-				RELATION('Q', 2),
-				RELATION('R', 2),
-				RELATION('S', 2),
-				RELATION('T', 2),
-				RELATION('U', 2),
-				RELATION('V', 2),
-				RELATION('W', 2),
-				RELATION('X', 2),
-				RELATION('Y', 2),
-				RELATION('Z', 2),
-				RELATION('_', 2)
+				RELATION('Z', 1)
 			),
-			NODE(126,
+			NODE(63,
 				RELATION('a', 1),
 				RELATION('b', 1),
 				RELATION('c', 1),
@@ -531,72 +747,8 @@ namespace FST {
 				RELATION('6', 1),
 				RELATION('7', 1),
 				RELATION('8', 1),
-				RELATION('9', 1),
-				RELATION('a', 2),
-				RELATION('b', 2),
-				RELATION('c', 2),
-				RELATION('d', 2),
-				RELATION('e', 2),
-				RELATION('f', 2),
-				RELATION('g', 2),
-				RELATION('h', 2),
-				RELATION('i', 2),
-				RELATION('j', 2),
-				RELATION('k', 2),
-				RELATION('l', 2),
-				RELATION('m', 2),
-				RELATION('n', 2),
-				RELATION('o', 2),
-				RELATION('p', 2),
-				RELATION('q', 2),
-				RELATION('r', 2),
-				RELATION('s', 2),
-				RELATION('t', 2),
-				RELATION('u', 2),
-				RELATION('v', 2),
-				RELATION('w', 2),
-				RELATION('x', 2),
-				RELATION('y', 2),
-				RELATION('z', 2),
-				RELATION('A', 2),
-				RELATION('B', 2),
-				RELATION('C', 2),
-				RELATION('D', 2),
-				RELATION('E', 2),
-				RELATION('F', 2),
-				RELATION('G', 2),
-				RELATION('H', 2),
-				RELATION('I', 2),
-				RELATION('J', 2),
-				RELATION('K', 2),
-				RELATION('L', 2),
-				RELATION('M', 2),
-				RELATION('N', 2),
-				RELATION('O', 2),
-				RELATION('P', 2),
-				RELATION('Q', 2),
-				RELATION('R', 2),
-				RELATION('S', 2),
-				RELATION('T', 2),
-				RELATION('U', 2),
-				RELATION('V', 2),
-				RELATION('W', 2),
-				RELATION('X', 2),
-				RELATION('Y', 2),
-				RELATION('Z', 2),
-				RELATION('_', 2),
-				RELATION('0', 2),
-				RELATION('1', 2),
-				RELATION('2', 2),
-				RELATION('3', 2),
-				RELATION('4', 2),
-				RELATION('5', 2),
-				RELATION('6', 2),
-				RELATION('7', 2),
-				RELATION('8', 2),
-				RELATION('9', 2)
-			),
-			NODE()
+				RELATION('9', 1)
+			)
 		);
 
 		FST lex_function(
@@ -1145,8 +1297,8 @@ namespace FST {
 
 		FST lex_byteLiteral(
 			str,
-			2,
-			NODE(20,
+			1,
+			NODE(10,
 				RELATION('0', 0),
 				RELATION('1', 0),
 				RELATION('2', 0),
@@ -1156,62 +1308,53 @@ namespace FST {
 				RELATION('6', 0),
 				RELATION('7', 0),
 				RELATION('8', 0),
-				RELATION('9', 0),
-				RELATION('0', 1),
-				RELATION('1', 1),
-				RELATION('2', 1),
-				RELATION('3', 1),
-				RELATION('4', 1),
-				RELATION('5', 1),
-				RELATION('6', 1),
-				RELATION('7', 1),
-				RELATION('8', 1),
-				RELATION('9', 1)
-			),
-			NODE()
+				RELATION('9', 0)
+			)
 		);
 		
 		std::vector<FSTAssigned> FSTarray = {
-			FSTAssigned(&lex_byte, IT::BYTE, LEX_BYTE),							// 0
-			FSTAssigned(&lex_text, IT::TEXT, LEX_TEXT),							// 1
-			FSTAssigned(&lex_symbol, IT::SYMBOL, LEX_SYMBOL),					// 2
-			FSTAssigned(&lex_function, (IT::IDDATATYPE)0, LEX_FUNCTION),        // 3
-			FSTAssigned(&lex_declare, (IT::IDDATATYPE)0, LEX_DECLARE),          // 4
-			FSTAssigned(&lex_return, (IT::IDDATATYPE)0, LEX_RETURN),			// 5
-			FSTAssigned(&lex_display, (IT::IDDATATYPE)0, LEX_DISPLAY),			// 6
-			FSTAssigned(&lex_main, (IT::IDDATATYPE)0, LEX_MAIN),				// 7
+			FSTAssigned(&lex_boolean, IT::BOOLEAN, LEX_BOOLEAN),
+			FSTAssigned(&lex_hallow, IT::HALLOW, LEX_HALLOW),					// 0
+			FSTAssigned(&lex_byte, IT::BYTE, LEX_BYTE),							// 1
+			FSTAssigned(&lex_text, IT::TEXT, LEX_TEXT),							// 2
+			FSTAssigned(&lex_symbol, IT::SYMBOL, LEX_SYMBOL),					// 3
+			FSTAssigned(&lex_function, (IT::IDDATATYPE)0, LEX_FUNCTION),        // 4
+			FSTAssigned(&lex_declare, (IT::IDDATATYPE)0, LEX_DECLARE),          // 5
+			FSTAssigned(&lex_return, (IT::IDDATATYPE)0, LEX_RETURN),			// 6
+			FSTAssigned(&lex_display, (IT::IDDATATYPE)0, LEX_DISPLAY),			// 7
+			FSTAssigned(&lex_main, (IT::IDDATATYPE)0, LEX_MAIN),				// 8
 
-			FSTAssigned(&lex_semicolon, (IT::IDDATATYPE)0, LEX_SEMICOLON),		// 8
-			FSTAssigned(&lex_comma, (IT::IDDATATYPE)0, LEX_COMMA),				// 9
-			FSTAssigned(&lex_leftbrace, (IT::IDDATATYPE)0, LEX_LEFTBRACE),		// 10
-			FSTAssigned(&lex_bracelet, (IT::IDDATATYPE)0, LEX_BRACELET),		// 11
-			FSTAssigned(&lex_leftthesis, (IT::IDDATATYPE)0, LEX_LEFTTHESIS),	// 12
-			FSTAssigned(&lex_rightthesis, (IT::IDDATATYPE)0, LEX_RIGHTTHESIS),  // 13
+			FSTAssigned(&lex_semicolon, (IT::IDDATATYPE)0, LEX_SEMICOLON),		// 9
+			FSTAssigned(&lex_comma, (IT::IDDATATYPE)0, LEX_COMMA),				// 10
+			FSTAssigned(&lex_leftbrace, (IT::IDDATATYPE)0, LEX_LEFTBRACE),		// 11
+			FSTAssigned(&lex_bracelet, (IT::IDDATATYPE)0, LEX_BRACELET),		// 12
+			FSTAssigned(&lex_leftthesis, (IT::IDDATATYPE)0, LEX_LEFTTHESIS),	// 13
+			FSTAssigned(&lex_rightthesis, (IT::IDDATATYPE)0, LEX_RIGHTTHESIS),  // 14
 
-			FSTAssigned(&lex_plus, (IT::IDDATATYPE)0, LEX_PLUS),				// 14
-			FSTAssigned(&lex_minus, (IT::IDDATATYPE)0, LEX_MINUS),				// 15
-			FSTAssigned(&lex_start, (IT::IDDATATYPE)0, LEX_START),				// 16
-			FSTAssigned(&lex_dirslash, (IT::IDDATATYPE)0, LEX_DIRSLASH),		// 17
+			FSTAssigned(&lex_plus, (IT::IDDATATYPE)0, LEX_PLUS),				// 15
+			FSTAssigned(&lex_minus, (IT::IDDATATYPE)0, LEX_MINUS),				// 16
+			FSTAssigned(&lex_start, (IT::IDDATATYPE)0, LEX_START),				// 17
+			FSTAssigned(&lex_dirslash, (IT::IDDATATYPE)0, LEX_DIRSLASH),		// 18
 
-			FSTAssigned(&lex_assigment, (IT::IDDATATYPE)0, LEX_ASSIGNMENT),	    // 18
+			FSTAssigned(&lex_assigment, (IT::IDDATATYPE)0, LEX_ASSIGNMENT),	    // 19
 
-			FSTAssigned(&lex_if, (IT::IDDATATYPE)0, LEX_IF),					// 19
-			FSTAssigned(&lex_else, (IT::IDDATATYPE)0, LEX_ELSE),				// 20
+			FSTAssigned(&lex_if, (IT::IDDATATYPE)0, LEX_IF),					// 20
+			FSTAssigned(&lex_else, (IT::IDDATATYPE)0, LEX_ELSE),				// 21
 
-			FSTAssigned(&lex_more, (IT::IDDATATYPE)0, LEX_MORE),				// 21
-			FSTAssigned(&lex_less, (IT::IDDATATYPE)0, LEX_LESS),				// 22
-			FSTAssigned(&lex_equal, (IT::IDDATATYPE)0, LEX_EQUAL),				// 23
-			FSTAssigned(&lex_exclamation, (IT::IDDATATYPE)0, LEX_EXCLAMATION),  // 24
-			FSTAssigned(&lex_moreEqual, (IT::IDDATATYPE)0, LEX_MOREEQUAL),      // 25
-			FSTAssigned(&lex_lessEqual, (IT::IDDATATYPE)0, LEX_LESSEQUAL),      // 26
+			FSTAssigned(&lex_more, (IT::IDDATATYPE)0, LEX_MORE),				// 22
+			FSTAssigned(&lex_less, (IT::IDDATATYPE)0, LEX_LESS),				// 23
+			FSTAssigned(&lex_equal, (IT::IDDATATYPE)0, LEX_EQUAL),				// 24
+			FSTAssigned(&lex_exclamation, (IT::IDDATATYPE)0, LEX_EXCLAMATION),  // 25
+			FSTAssigned(&lex_moreEqual, (IT::IDDATATYPE)0, LEX_MOREEQUAL),      // 26
+			FSTAssigned(&lex_lessEqual, (IT::IDDATATYPE)0, LEX_LESSEQUAL),      // 27
 
-			FSTAssigned(&lex_id, (IT::IDDATATYPE)0, LEX_ID),					// 27
-			FSTAssigned(&lex_textLiteral, IT::TEXT, LEX_LITERAL),				// 28
-			FSTAssigned(&lex_symbolLiteral, IT::SYMBOL, LEX_LITERAL),			// 29
-			FSTAssigned(&lex_byteLiteral, IT::BYTE, LEX_LITERAL)				// 30
+			FSTAssigned(&lex_id, (IT::IDDATATYPE)0, LEX_ID),					// 28
+			FSTAssigned(&lex_textLiteral, IT::TEXT, LEX_LITERAL),				// 29
+			FSTAssigned(&lex_symbolLiteral, IT::SYMBOL, LEX_LITERAL),			// 30
+			FSTAssigned(&lex_byteLiteral, IT::BYTE, LEX_LITERAL)				// 31
 		};
 		
-		int FSTarrayLen = 31;
+		int FSTarrayLen = 32;
 
 		IT::IDDATATYPE iddatatype = (IT::IDDATATYPE)0;
 		IT::IDTYPE idtype = (IT::IDTYPE)0;
@@ -1224,7 +1367,8 @@ namespace FST {
 
 		char nextSymbol = '\0';
 		char ch;
-		int line = 0;
+		int line = 1;
+		int col = 0;
 		std::vector<char>word;
 		
  		for (int i = 0; i < in.size; i++) {
@@ -1232,6 +1376,7 @@ namespace FST {
 
 			if (ch == '\n') {
 				line += 1;
+				col = 0;
 			}
 
 			if (isSymbolIsStopSymbol(ch)) {
@@ -1240,7 +1385,9 @@ namespace FST {
 						if (ch == expectedSymbol) {
 							inLiteral = false;
 							word.push_back(ch);
-							executeWordAndClear(word, str, FSTarray);
+							
+							executeWordAndClear(word, str, FSTarray, line, col, lextable, idtable);
+							
 						}
 						else {
 							throw ERROR_THROW(126);
@@ -1250,7 +1397,9 @@ namespace FST {
 						inLiteral = true;
 						expectedSymbol = ch;
 
-						executeWordAndClear(word, str, FSTarray);
+						
+						executeWordAndClear(word, str, FSTarray, line, col, lextable, idtable);
+						
 
 						word.push_back(ch);
 					}
@@ -1260,14 +1409,17 @@ namespace FST {
 						word.push_back(ch);
 					}
 					else {	
-						executeWordAndClear(word, str, FSTarray);
+						
+						executeWordAndClear(word, str, FSTarray, line, col, lextable, idtable);
+						
 
 						if (ch != ' ' && ch != '\n' && ch != '\'' || ch != '\"') {
 							if (ch == '<' || ch == '>' || ch == '!' || ch == '=') {
 								if (i == in.size - 1) {
 									word.push_back(ch);
 
-									executeWordAndClear(word, str, FSTarray);
+									
+									executeWordAndClear(word, str, FSTarray, line, col, lextable, idtable);
 								}
 								else {
 									nextSymbol = in.text[i + 1];
@@ -1275,21 +1427,23 @@ namespace FST {
 										word.push_back(ch);
 										word.push_back(nextSymbol);
 
-										executeWordAndClear(word, str, FSTarray);
-
+										
+										executeWordAndClear(word, str, FSTarray, line, col, lextable, idtable);
+										
 										i++;
 									}
 									else {
 										word.push_back(ch);
-
-										executeWordAndClear(word, str, FSTarray);
+										
+										executeWordAndClear(word, str, FSTarray, line, col, lextable, idtable);
+										
 									}
 								}
 							}
 							else {
 								word.push_back(ch);
-
-								executeWordAndClear(word, str, FSTarray);
+								
+								executeWordAndClear(word, str, FSTarray, line, col, lextable, idtable);
 							}
 						}
 						else {
@@ -1302,5 +1456,9 @@ namespace FST {
 				word.push_back(ch);
 			}
 		}
+		
+		executeWordAndClear(word, str, FSTarray, line, col, lextable, idtable);
+		
+		AnalyzerWords(FSTarray, lextable, idtable);
 	}
 }

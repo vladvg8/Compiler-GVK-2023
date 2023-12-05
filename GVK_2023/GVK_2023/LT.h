@@ -2,16 +2,16 @@
 #define LEXEMA_FIXSIZE 1 // размер лексемы
 #define LT_MAXSIZE 4096 // максимальное количество строк в таблице лексем
 #define LT_TI_NULLIDX 0xffffffff // нет элемента в таблице идентификаторов
-#define LEX_HALLOW 'h'    // void
-#define LEX_BYTE 'b'      // byte
+#define LEX_HALLOW 't'    // void
+#define LEX_BYTE 't'      // byte
 #define LEX_TEXT 't'	  // text (string)
-#define LEX_SYMBOL 'c'    // symbol (char)
-#define LEX_BOOLEAN 'o'   // boolean
+#define LEX_SYMBOL 't'    // symbol (char)
+#define LEX_BOOLEAN 't'   // boolean
 #define LEX_ID 'i'        // идентификатор
 #define LEX_LITERAL 'l'   // литерал
 #define LEX_FUNCTION 'f'  // function
 #define LEX_IF 'y'		  // if
-#define LEX_ELSE 's'      // else
+#define LEX_ELSE 'u'      // else
 #define LEX_DECLARE 'd'   // declare
 #define LEX_RETURN 'r'    // return
 #define LEX_DISPLAY 'p'   // display (print)
@@ -41,15 +41,19 @@ namespace LT {
 	struct Entry {
 		char lexema; // лексема
 		int sn; // номер строки в исходном коде
+		int col;
 		int idxTI; // индекс в таблице идентификаторов
+		char data;
 
 		Entry( // конструктор для строки таблицы лексем
 			char lexema,
 			int sn,
+			int col,
 			int idxTI
 		) {
 			this->lexema = lexema;
 			this->sn = sn;
+			this->col = col;
 			this->idxTI = idxTI;
 		};
 
