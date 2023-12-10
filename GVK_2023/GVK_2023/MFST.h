@@ -6,22 +6,21 @@
 
 #define MFST_DIAGN_NUMBER 3
 
-struct LEX {
-	IT::IdTable idtable;
-	LT::LexTable lextable;
-
-	LEX(LT::LexTable llextable, IT::IdTable iidtable) {
-		this->idtable = iidtable;
-		this->lextable = llextable;
-	}
-
-	LEX() {};
-};
-
-
 typedef std::stack<short> MFSTSTSTACK;
 
 namespace MFST {
+	struct LEX {
+		IT::IdTable idtable;
+		LT::LexTable lextable;
+
+		LEX(LT::LexTable llextable, IT::IdTable iidtable) {
+			this->idtable = iidtable;
+			this->lextable = llextable;
+		}
+
+		LEX() {};
+	};
+
 	struct MfstState {
 		short lenta_position;
 		short nrule;

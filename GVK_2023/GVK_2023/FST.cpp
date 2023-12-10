@@ -71,9 +71,9 @@ namespace FST {
 
 	bool isSymbolIsStopSymbol(char ch) {
 		char stopSymbols[] = {
-			' ', ';', ':', ',', '(', '{', '}',')', '=', '!', '<', '>', '\'', '\"', '\n', '+', '-', '/', '*'
+			' ', ';', ':', ',', '(', '{', '}',')', '=', '!', '<', '>', '\'', '\"', '\n'
 		};
-		int numberOfStopSymbols = 19;
+		int numberOfStopSymbols = 15;
 		for (int i = 0; i < numberOfStopSymbols; i++) {
 			if (ch == stopSymbols[i]) {
 				return true;
@@ -146,6 +146,20 @@ namespace FST {
 		word.clear();
 	}
 
+	bool compareVectorToCString(const std::vector<char>& vec, const char* cstr) {
+		if (vec.size() != std::strlen(cstr)) {
+			return false;
+		}
+
+		for (size_t i = 0; i < vec.size(); ++i) {
+			if (vec[i] != cstr[i]) {
+				return false;
+			}
+		}
+
+		return true;
+	}
+
 	void AnalyzerWords(std::vector<FSTAssigned> FSTarray, LT::LexTable& lextable, IT::IdTable& idtable) {
 
 		bool isExecuted = false;
@@ -166,6 +180,9 @@ namespace FST {
 			for (int j = 0; j < FSTarray.size(); j++) {
 				FSTarray[j].fst->string = lexems[i].word; // берем слово
 				if (execute(*FSTarray[j].fst)) {
+					if ((compareVectorToCString(FSTarray[j].fst->string, "false") || compareVectorToCString(FSTarray[j].fst->string, "true")) && FSTarray[j].lex == 'i') {
+						continue;
+					}
 					isExecuted = true;
 					LT::Entry LTObj(FSTarray[j].lex, lexems[i].line, lexems[i].col, 0xffffffff);
 					//if (isFuncStarted && FSTarray[j].lex != LEX_LEFTBRACE) {
@@ -179,7 +196,7 @@ namespace FST {
 						idtype = IT::VARIABLE;
 						break;
 					}
-					case LEX_TEXT: // не понимаю
+					case LEX_TEXT:
 					{
 						if (FSTarray[j].iddatatype == IT::BYTE) {
 							iddatatype = IT::BYTE;
@@ -276,9 +293,6 @@ namespace FST {
 						if (!isFuncStarted) {
 
 						}
-						if (lextable.table[lextable.size - 1].lexema == LEX_MAIN) {
-							throw ERROR_THROW_IN(125, lexems[i].line, lexems[i].col);
-						}
 						if (lextable.size != 0 && lextable.table[lextable.size - 1].idxTI != TI_NULLIDX && idtable.table[lextable.table[lextable.size - 1].idxTI].idtype == IT::FUNCTION) {
 							if (lextable.table[lextable.size - 4].lexema == LEX_DECLARE) {
 								isParam = true;
@@ -340,6 +354,9 @@ namespace FST {
 						else if (lexems[i].word[0] == '\'') {
 							iddatatype = IT::SYMBOL;
 						}
+						else if (compareVectorToCString(lexems[i].word, "false") || compareVectorToCString(lexems[i].word, "true")) {
+							iddatatype = IT::BOOLEAN;
+						}
 						else {
 							iddatatype = IT::BYTE;
 						}
@@ -362,7 +379,7 @@ namespace FST {
 						break;
 					}
 					}
-					if (LTObj.lexema == LEX_MINUS || LTObj.lexema == LEX_MORE || LTObj.lexema == LEX_LEFTBRACE || LTObj.lexema == LEX_BRACELET || LTObj.lexema == LEX_LEFTTHESIS || LTObj.lexema == LEX_RIGHTTHESIS) {
+					if (LTObj.lexema == LEX_MORE || LTObj.lexema == LEX_LEFTBRACE || LTObj.lexema == LEX_BRACELET || LTObj.lexema == LEX_LEFTTHESIS || LTObj.lexema == LEX_RIGHTTHESIS) {
 						char* strr = new char[lexems[i].word.size()];
 						for (int g = 0; g < lexems[i].word.size(); g++) {
 							strr[g] = lexems[i].word[g];
@@ -1295,22 +1312,70 @@ namespace FST {
 			NODE()
 		);
 
+	
 		FST lex_byteLiteral(
 			str,
-			1,
+			3,
 			NODE(10,
-				RELATION('0', 0),
-				RELATION('1', 0),
-				RELATION('2', 0),
-				RELATION('3', 0),
-				RELATION('4', 0),
-				RELATION('5', 0),
-				RELATION('6', 0),
-				RELATION('7', 0),
-				RELATION('8', 0),
-				RELATION('9', 0)
+				RELATION('-', 1),
+				RELATION('0', 2),
+				RELATION('1', 2),
+				RELATION('2', 2),
+				RELATION('3', 2),
+				RELATION('4', 2),
+				RELATION('5', 2),
+				RELATION('6', 2),
+				RELATION('7', 2),
+				RELATION('8', 2),
+				RELATION('9', 2)
+			),
+
+			NODE(10,
+				RELATION('0', 2),
+				RELATION('1', 2),
+				RELATION('2', 2),
+				RELATION('3', 2),
+				RELATION('4', 2),
+				RELATION('5', 2),
+				RELATION('6', 2),
+				RELATION('7', 2),
+				RELATION('8', 2),
+				RELATION('9', 2)
+			),
+
+			NODE(10,
+				RELATION('0', 2),
+				RELATION('1', 2),
+				RELATION('2', 2),
+				RELATION('3', 2),
+				RELATION('4', 2),
+				RELATION('5', 2),
+				RELATION('6', 2),
+				RELATION('7', 2),
+				RELATION('8', 2),
+				RELATION('9', 2)
 			)
+
 		);
+
+		FST lex_booleanLiteral(
+			str,
+			9,
+			NODE(2, 
+				RELATION('t', 1),
+				RELATION('f', 4)
+			),
+			NODE(1, RELATION('r', 2)),
+			NODE(1, RELATION('u', 3)),
+			NODE(1, RELATION('e', 8)),
+
+			NODE(1, RELATION('a', 5)),
+			NODE(1, RELATION('l', 6)),
+			NODE(1, RELATION('s', 7)),
+			NODE(1, RELATION('e', 8)),
+			NODE()
+		);
+
 		
 		std::vector<FSTAssigned> FSTarray = {
 			FSTAssigned(&lex_boolean, IT::BOOLEAN, LEX_BOOLEAN),
@@ -1331,11 +1396,6 @@ namespace FST {
 			FSTAssigned(&lex_leftthesis, (IT::IDDATATYPE)0, LEX_LEFTTHESIS),	// 13
 			FSTAssigned(&lex_rightthesis, (IT::IDDATATYPE)0, LEX_RIGHTTHESIS),  // 14
 
-			FSTAssigned(&lex_plus, (IT::IDDATATYPE)0, LEX_PLUS),				// 15
-			FSTAssigned(&lex_minus, (IT::IDDATATYPE)0, LEX_MINUS),				// 16
-			FSTAssigned(&lex_start, (IT::IDDATATYPE)0, LEX_START),				// 17
-			FSTAssigned(&lex_dirslash, (IT::IDDATATYPE)0, LEX_DIRSLASH),		// 18
-
 			FSTAssigned(&lex_assigment, (IT::IDDATATYPE)0, LEX_ASSIGNMENT),	    // 19
 
 			FSTAssigned(&lex_if, (IT::IDDATATYPE)0, LEX_IF),					// 20
@@ -1351,7 +1411,8 @@ namespace FST {
 			FSTAssigned(&lex_id, (IT::IDDATATYPE)0, LEX_ID),					// 28
 			FSTAssigned(&lex_textLiteral, IT::TEXT, LEX_LITERAL),				// 29
 			FSTAssigned(&lex_symbolLiteral, IT::SYMBOL, LEX_LITERAL),			// 30
-			FSTAssigned(&lex_byteLiteral, IT::BYTE, LEX_LITERAL)				// 31
+			FSTAssigned(&lex_byteLiteral, IT::BYTE, LEX_LITERAL),
+			FSTAssigned(&lex_booleanLiteral, IT::BOOLEAN, LEX_LITERAL)																	// 31
 		};
 		
 		int FSTarrayLen = 32;

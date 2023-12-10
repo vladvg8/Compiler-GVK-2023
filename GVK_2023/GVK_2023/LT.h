@@ -29,10 +29,6 @@
 #define LEX_EXCLAMATION 'k' // неравенство
 #define LEX_MOREEQUAL 'k'   // больше равно
 #define LEX_LESSEQUAL 'k'   // меньше равно
-#define LEX_PLUS 'v'        // +
-#define LEX_MINUS 'v'       // -
-#define LEX_START 'v'       // *
-#define LEX_DIRSLASH 'v'   // /
 
 #include "In.h"
 #include <vector>
@@ -41,7 +37,7 @@ namespace LT {
 	struct Entry {
 		char lexema; // лексема
 		int sn; // номер строки в исходном коде
-		int col;
+		int cn;
 		int idxTI; // индекс в таблице идентификаторов
 		char data;
 
@@ -53,7 +49,7 @@ namespace LT {
 		) {
 			this->lexema = lexema;
 			this->sn = sn;
-			this->col = col;
+			this->cn = col;
 			this->idxTI = idxTI;
 		};
 

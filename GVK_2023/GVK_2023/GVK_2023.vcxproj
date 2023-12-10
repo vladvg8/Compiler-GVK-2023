@@ -137,17 +137,25 @@
     <ClCompile Include="LT.cpp" />
     <ClCompile Include="MFST.cpp" />
     <ClCompile Include="Parm.cpp" />
+    <ClCompile Include="Semantic.cpp" />
+    <ClCompile Include="PolishN.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Error.h" />
     <ClInclude Include="FST.h" />
     <ClInclude Include="GRB.h" />
+    <ClInclude Include="PolishN.h" />
     <ClInclude Include="In.h" />
     <ClInclude Include="IT.h" />
     <ClInclude Include="Log.h" />
     <ClInclude Include="LT.h" />
     <ClInclude Include="MFST.h" />
     <ClInclude Include="Parm.h" />
+    <ClInclude Include="Semantic.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="input.txt" />
+    <Text Include="input.txt.log" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

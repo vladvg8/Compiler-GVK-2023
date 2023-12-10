@@ -10,6 +10,7 @@
 #include "IT.h"
 #include "MFST.h"
 #include "GRB.h"
+#include "Semantic.h"
 #include "FST.h"
 
 using namespace std;
@@ -30,18 +31,31 @@ int _tmain(int argc, wchar_t* argv[]) {
 		IT::IdTable idTable = IT::Create();
 		// Лексический анализ
 		FST::Analyze(in, lexTable, idTable);
-		/*for (int i = 0; i < lexTable.size; i++) {
+		for (int i = 0; i < lexTable.size; i++) {
 			cout << lexTable.table[i].lexema;
-		}*/
+		}
+		cout << endl;
+		for (int i = 0; i < idTable.size; i++) {
+			cout << idTable.table[i].id << " -> " << idTable.table[i].iddatatype << endl;
+		}
 		Log::WriteTables(log, idTable, lexTable);
 		// Синтаксический анализ
-		LEX lex(lexTable, idTable);
+		MFST::LEX lex(lexTable, idTable);
 		MFST::Mfst mfst(lex, GRB::getGreibach(), log);
 		if (!mfst.start()) {
 			Log::WriteLine(log, (char*)"\nСинтаксический анализ завершен с ошибкой", "");
 			return -1;
 		};
-		Log::WriteLine(log, (char*)"\nСинтаксический анализ завершен без ошибок ", "");
+
+		Log::WriteLine(log, (char*)"\nСинтаксический анализ завершен без ошибок\n", "");
+		// Семантический анализ
+		if (SA::startSA(lex)) {
+			Log::WriteLine(log, (char*)"\nСемантический анализ выполнен без ошибок\n", "");
+			cout << "Все хорошо" << endl;
+		}
+		cout << "Программа выполнена успешно!" << endl;
+		
+
 	}
 	catch (Error::ERROR error) {
 		// обработка ошибки если параметр -in не задан.

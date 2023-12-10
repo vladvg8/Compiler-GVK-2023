@@ -98,7 +98,7 @@ namespace MFST {
 	char* Mfst::getDiagnosis(short n, char* buf) {
 		char* str = (char*)"";
 		if (n < MFST_DIAGN_NUMBER && diagnosis[n].lenta_position > 0) {
-			Error::ERROR error = Error::geterror(grebach.getRule(diagnosis[n].nrule).iderror);
+			Error::ERROR error = Error::geterror(grebach.getRule(diagnosis[n].nrule).idError);
 			sprintf_s(buf, ERROR_MAXSIZE_MESSAGE, "%d: строка %d,%s", error.id, lex.lextable.table[diagnosis[n].lenta_position].sn, error.message);
 			str = buf;
 		}

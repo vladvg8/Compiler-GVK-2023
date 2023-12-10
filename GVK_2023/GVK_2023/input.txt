@@ -1,14 +1,24 @@
-declare byte function sayHello() {
+declare byte function getByte() {
 	return 1;
+}
+declare boolean function getTrue() {
+	return true;
+}
+declare symbol function getSymbol() {
+	return '1';
+}
+declare text function getText() {
+	return "Hello, World!";
+}
+declare hallow function processSomething() {
+	
 }
 
 main {
-	display("Hello, World!");
-	if (1) {
-		display("Hello, World!");
-	} else {
+	declare byte number: 1;
+	if (2 < 1) {
 
+	} else {
+	 
 	}
-	declare byte number:123;
-	number: number + 1;
 }
