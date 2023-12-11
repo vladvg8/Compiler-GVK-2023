@@ -13,8 +13,22 @@ namespace IT {
 		if (idtable.size + 1 > TI_MAXSIZE) {
 			throw ERROR_THROW(117); // При добавлении инентификатора был превышен максимальный размер таблицы идентификаторов(IT)
 		}
-		idtable.table.push_back(entry);
-		idtable.size++;
+		bool isUnique = true;
+		if (entry.idtype != IT::LITERAL) {
+			for (int i = 0; i < idtable.table.size(); i++) {
+				if (strcmp(idtable.table[i].id, entry.id) == 0) {
+					isUnique = false;
+					break;
+				}
+			}
+		}
+		if (isUnique) {
+			idtable.table.push_back(entry);
+			idtable.size++;
+		}
+		else {
+			throw ERROR_THROW(118);
+		}
 	}
 
 	Entry GetEntry(IdTable& idtable, int n) {

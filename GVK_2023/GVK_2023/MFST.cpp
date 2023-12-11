@@ -142,7 +142,7 @@ namespace MFST {
 				if (nrule >= 0) {
 					GRB::Rule::Chain chain;
 					nrulechain = rule.getNextChain(lenta[lenta_position], chain, nrulechain + 1);
-					if (nrulechain >= 0) {
+					if (nrulechain >= 0 || nrulechain == -2) {
 						char* buff = new char[200];
 						rule.getCRule(buff, nrulechain);
 						*log.stream << std::setw(20) << std::left << buff;

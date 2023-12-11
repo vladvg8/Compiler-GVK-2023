@@ -1,6 +1,4 @@
-﻿  GRB.cpp
-D:\Labs\KPO\course work\Compiler-GVK-2023\GVK_2023\GVK_2023\GRB.cpp(12,1): warning C4005: NS: изменение макроопределения
-D:\Labs\KPO\course work\Compiler-GVK-2023\GVK_2023\GVK_2023\GRB.h(4,1): message : см. предыдущее определение "NS"
-D:\Labs\KPO\course work\Compiler-GVK-2023\GVK_2023\GVK_2023\GRB.cpp(13,1): warning C4005: TS: изменение макроопределения
-D:\Labs\KPO\course work\Compiler-GVK-2023\GVK_2023\GVK_2023\GRB.h(5,1): message : см. предыдущее определение "TS"
+﻿  PolishN.cpp
+D:\Labs\KPO\course work\Compiler-GVK-2023\GVK_2023\GVK_2023\PolishN.cpp(51,28): warning C4018: <: несоответствие типов со знаком и без знака
+D:\Labs\KPO\course work\Compiler-GVK-2023\GVK_2023\GVK_2023\PolishN.cpp(61,21): warning C4018: <: несоответствие типов со знаком и без знака
   GVK_2023.vcxproj -> D:\Labs\KPO\course work\Compiler-GVK-2023\GVK_2023\Debug\GVK_2023.exe

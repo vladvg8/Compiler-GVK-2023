@@ -246,7 +246,13 @@ namespace FST {
 							for (int j = 0; j < parentStack.size(); j++) {
 								scope += parentStack.at(j);
 							}
-							scope += strr;
+							if (idtype != IT::FUNCTION) {
+								scope += "|";
+								scope += strr;
+							}
+							else {
+								scope += strr;
+							}
 						}
 						if (IT::IsId(idtable, (char*)scope.c_str()) == TI_NULLIDX) {
 							if (idtype != IT::PARAMETER && !isDeclared) {
@@ -332,6 +338,7 @@ namespace FST {
 						if (isWasFunc) {
 							isWasFunc = false;
 							parentStack.pop_back();
+							
 						}
 						break;
 					}
@@ -339,6 +346,7 @@ namespace FST {
 					{
 						if (!isWasMain) {
 							isWasMain = true;
+							parentStack.pop_back();
 							parentStack.push_back("main");
 						}
 						else {

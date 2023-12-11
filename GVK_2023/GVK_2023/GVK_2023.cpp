@@ -11,6 +11,7 @@
 #include "MFST.h"
 #include "GRB.h"
 #include "Semantic.h"
+#include "PolishN.h"
 #include "FST.h"
 
 using namespace std;
@@ -31,13 +32,7 @@ int _tmain(int argc, wchar_t* argv[]) {
 		IT::IdTable idTable = IT::Create();
 		// Лексический анализ
 		FST::Analyze(in, lexTable, idTable);
-		for (int i = 0; i < lexTable.size; i++) {
-			cout << lexTable.table[i].lexema;
-		}
-		cout << endl;
-		for (int i = 0; i < idTable.size; i++) {
-			cout << idTable.table[i].id << " -> " << idTable.table[i].iddatatype << endl;
-		}
+		cout << "Лексический анализ завершен без ошибок\n";
 		Log::WriteTables(log, idTable, lexTable);
 		// Синтаксический анализ
 		MFST::LEX lex(lexTable, idTable);
@@ -46,12 +41,17 @@ int _tmain(int argc, wchar_t* argv[]) {
 			Log::WriteLine(log, (char*)"\nСинтаксический анализ завершен с ошибкой", "");
 			return -1;
 		};
-
 		Log::WriteLine(log, (char*)"\nСинтаксический анализ завершен без ошибок\n", "");
+		cout << "Синтаксический анализ завершен без ошибок\n";
 		// Семантический анализ
 		if (SA::startSA(lex)) {
 			Log::WriteLine(log, (char*)"\nСемантический анализ выполнен без ошибок\n", "");
-			cout << "Все хорошо" << endl;
+			cout << "Семантический анализ выполнен без ошибок\n";
+		}
+		PolishNotation::CreatePolishTable(lex);
+		cout << "Польская запись завершена без ошибок\n";
+		for (int i = 0; i < lexTable.size; i++) {
+			cout << lexTable.table[i].lexema;
 		}
 		cout << "Программа выполнена успешно!" << endl;
 		

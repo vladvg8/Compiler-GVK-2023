@@ -32,10 +32,11 @@ namespace GRB {
 	Greibach greibach(NS('S'), TS('$'),
 		12,
 		Rule(NS('S'), GRB_ERROR_SERIES + 0, // функции и main
-			3,
+			4,
+			Rule::Chain(),
 			Rule::Chain(12, TS('d'), TS('t'), TS('f'), TS('i'), TS('('), NS('F'), TS(')'), TS('{'), NS('N'), NS('R'), TS('}'), NS('S')),
-			Rule::Chain(4, TS('m'), TS('{'), NS('N'), TS('}')),
-			Rule::Chain()
+			Rule::Chain(11, TS('d'), TS('t'), TS('f'), TS('i'), TS('('), NS('F'), TS(')'), TS('{'), NS('N'), TS('}'), NS('S')),
+			Rule::Chain(4, TS('m'), TS('{'), NS('N'), TS('}'))
 		),
 		Rule(NS('F'), GRB_ERROR_SERIES + 1, // параметр функции
 			3,
@@ -50,9 +51,9 @@ namespace GRB {
 		),
 		Rule(NS('R'), GRB_ERROR_SERIES + 3, // return
 			3,
+			Rule::Chain(),
 			Rule::Chain(3, TS('r'), TS('i'), TS(';')),
-			Rule::Chain(3, TS('r'), TS('l'), TS(';')),
-			Rule::Chain()
+			Rule::Chain(3, TS('r'), TS('l'), TS(';'))
 		),
 		Rule(NS('N'), GRB_ERROR_SERIES + 4, // тело
 			7,
@@ -72,27 +73,24 @@ namespace GRB {
 		),
 		Rule(NS('O'), GRB_ERROR_SERIES + 6, // то что ты передаешь в display
 			4,
+			Rule::Chain(),
 			Rule::Chain(4, TS('i'), TS('('), NS('P'), TS(')')),
 			Rule::Chain(1, TS('i')),
-			Rule::Chain(1, TS('l')),
-			Rule::Chain()
+			Rule::Chain(1, TS('l'))
 		),
 		Rule(NS('P'), GRB_ERROR_SERIES + 7,
-			7,
-			Rule::Chain(4, TS('i'), TS('('), NS('P'), TS(')')),
+			5,
+			Rule::Chain(),
 			Rule::Chain(2, TS('i'), NS('K')),
 			Rule::Chain(2, TS('l'), NS('K')),
-			Rule::Chain(5, TS(','), TS('i'), TS('('), NS('P'), TS(')')),
 			Rule::Chain(3, TS(','), TS('i'), NS('K')),
-			Rule::Chain(3, TS(','), TS('l'), NS('K')),
-			Rule::Chain()
+			Rule::Chain(3, TS(','), TS('l'), NS('K'))
 		),
 		Rule(NS('K'), GRB_ERROR_SERIES + 8,
-			4,
-			Rule::Chain(6, TS(','), TS('i'), TS('('), NS('P'), TS(')'), NS('P')),
+			3,
+			Rule::Chain(),
 			Rule::Chain(3, TS(','), TS('i'), NS('P')),
-			Rule::Chain(3, TS(','), TS('l'), NS('P')),
-			Rule::Chain()
+			Rule::Chain(3, TS(','), TS('l'), NS('P'))
 		),
 		Rule(NS('W'), GRB_ERROR_SERIES + 9,
 			3,
@@ -102,13 +100,14 @@ namespace GRB {
 		),
 		Rule(NS('T'), GRB_ERROR_SERIES + 10,
 			4,
+			Rule::Chain(),
 			Rule::Chain(5, TS('k'), TS('i'), TS('('), NS('P'), TS(')')),
 			Rule::Chain(2, TS('k'), TS('i')),
-			Rule::Chain(2, TS('k'), TS('l')),
-			Rule::Chain()
+			Rule::Chain(2, TS('k'), TS('l'))
 		),
 		Rule(NS('J'), GRB_ERROR_SERIES + 11,
-			1,
+			2,
+			Rule::Chain(),
 			Rule::Chain(4, TS('u'), TS('{'), NS('N'), TS('}'))
 		)
 		);
@@ -178,14 +177,33 @@ namespace GRB {
 
 	short Rule::getNextChain(GRBALPHABET t, Chain& pchain, short j)
 	{
+		if (size == 0) {
+			// Обработка случая Rule::Chain()
+			// Возвращаем специальный код, обозначающий пустую цепочку
+			return -2; // Например, -2 как код для пустой цепочки
+		}
+
 		short rc = -1;
-		while (j < size && chains[j].nt[0] != t && chains[j].nt[0] != 0)
+
+		// Если Rule::Chain() не пустой, продолжаем обработку
+		while (j < size) {
+			if (chains[j].nt[0] == t || chains[j].nt[0] == 0) {
+				// Нашли подходящую цепочку
+				rc = j;
+				break;
+			}
 			j++;
-		rc = (j < size ? j : -1);
-		if (rc >= 0)				//Можно ли заменить на (rc != -1)???
+		}
+
+		if (rc >= 0) {
+			// Если нашли цепочку, присваиваем её
 			pchain = chains[rc];
+		}
+
 		return rc;
 	}
+
+
 
 	char* Rule::Chain::getCChain(char* b)
 	{

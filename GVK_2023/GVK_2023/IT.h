@@ -1,5 +1,5 @@
 #pragma once
-#define ID_MAXSIZE 25 // максимальна€ длина идентификатора
+#define ID_MAXSIZE 50 // максимальна€ длина идентификатора
 #define TI_MAXSIZE 4096 // максимальное количество строк в таблице идентификаторов
 #define TI_BYTE_DEFAULT 0 // «начение по умолчанию дл€ byte - целочисленный тип данных в 1 байт
 #define TI_TEXT_DEFAULT "" // «начение по умолчанию дл€ text - аналог string
@@ -24,7 +24,7 @@ namespace IT {
 		VARIABLE = 1, 
 		FUNCTION = 2, 
 		PARAMETER = 3, 
-		LITERAL = 4 
+		LITERAL = 4
 	};
 
 	struct Entry {
@@ -79,4 +79,6 @@ namespace IT {
 		char id[ID_MAXSIZE]
 	);
 	void Delete(IdTable& idtable);
+
+	
 }

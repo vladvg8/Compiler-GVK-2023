@@ -1,24 +1,26 @@
-declare byte function getByte() {
-	return 1;
+declare byte function processSomethingnumber(byte n, byte dsadas) {
+    return n;
 }
-declare boolean function getTrue() {
-	return true;
+
+declare byte function getNumber() {
+return 1;
 }
-declare symbol function getSymbol() {
-	return '1';
-}
-declare text function getText() {
-	return "Hello, World!";
-}
+
 declare hallow function processSomething() {
-	
+    declare byte number: 123;
+    number: 42342;
+    if (true) {
+        display(processSomethingnumber(3, 2));
+    } else {
+        display(getNumber());
+    }
 }
 
 main {
-	declare byte number: 1;
-	if (2 < 1) {
 
-	} else {
-	 
-	}
+    if (2 < 1) {
+
+    } else {
+
+    }
 }
