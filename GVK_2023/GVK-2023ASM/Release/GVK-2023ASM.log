@@ -1,0 +1,9 @@
+﻿  Assembling input.txt.asm...
+input.txt.asm(41): warning A4000: cannot modify READONLY segment
+input.txt.asm(43): warning A6004: procedure argument or local not referenced : getNum$n
+input.txt.asm(43): warning A6004: procedure argument or local not referenced : getNum$m
+MathOperations.lib(MathOperations.obj) : warning LNK4075: не учитывается "/EDITANDCONTINUE" из-за спецификации "/OPT:ICF"
+LINK : warning LNK4098: библиотека по умолчанию "libucrt.lib" конфликтует с использованием других библиотек; используйте /NODEFAULTLIB:library
+  LINK : указан параметр /LTCG, но не требуется создание кода; удалите /LTCG из командной строки компоновки для повышения производительности компоновщика
+input.txt.obj : error LNK2026: небезопасный модуль для образа SAFESEH.
+D:\Labs\KPO\course work\Compiler-GVK-2023\GVK_2023\Release\GVK-2023ASM.exe : fatal error LNK1281: Не удается создать образ SAFESEH.

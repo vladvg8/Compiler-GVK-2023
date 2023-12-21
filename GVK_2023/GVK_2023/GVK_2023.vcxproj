@@ -127,6 +127,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="CodeGeneration.cpp" />
     <ClCompile Include="Error.cpp" />
     <ClCompile Include="FST.cpp" />
     <ClCompile Include="GRB.cpp" />
@@ -136,14 +137,17 @@
     <ClCompile Include="Log.cpp" />
     <ClCompile Include="LT.cpp" />
     <ClCompile Include="MFST.cpp" />
+    <ClCompile Include="Out.cpp" />
     <ClCompile Include="Parm.cpp" />
     <ClCompile Include="Semantic.cpp" />
     <ClCompile Include="PolishN.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="CodeGeneration.h" />
     <ClInclude Include="Error.h" />
     <ClInclude Include="FST.h" />
     <ClInclude Include="GRB.h" />
+    <ClInclude Include="Out.h" />
     <ClInclude Include="PolishN.h" />
     <ClInclude Include="In.h" />
     <ClInclude Include="IT.h" />
@@ -156,6 +160,9 @@
   <ItemGroup>
     <Text Include="input.txt" />
     <Text Include="input.txt.log" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="input.txt.asm" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

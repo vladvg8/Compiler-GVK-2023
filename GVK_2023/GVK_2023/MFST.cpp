@@ -1,13 +1,8 @@
-#include <iostream>
-#include <fstream>
 #include <iomanip>
-#include "Log.h"
-#include "GRB.h"
+#include <iostream>
 #include "MFST.h"
-using namespace std;
 
 namespace MFST {
-
 	int counter = 0;
 	int saveCounter = 1;
 
@@ -16,6 +11,7 @@ namespace MFST {
 		this->rc_step = SURPRISE;
 		this->nrule = -1;
 		this->nrule_chain = -1;
+
 	}
 	Mfst::MfstDiagnosis::MfstDiagnosis(short plenta_position, RC_STEP prc_step, short pnrule, short pnrule_chain) {
 		this->lenta_position = plenta_position;
@@ -49,9 +45,9 @@ namespace MFST {
 		this->lenta_position = 0;
 	}
 
-	Mfst::Mfst(LEX plex, GRB::Greibach pgrebach, Log::LOG& plog) {
+	Mfst::Mfst(MFST::LEX plex, GRB::Greibach pgrebach, Log::LOG& plog) {
 		this->lex = plex;
-		this->grebach = pgrebach;
+		this->greibach = pgrebach;
 		this->log = plog;
 		this->lenta = new short[plex.lextable.size];
 		for (int i = 0; i < plex.lextable.size; i++) {
@@ -60,8 +56,8 @@ namespace MFST {
 		this->lenta_size = plex.lextable.size;
 		this->lenta_position = 0;
 		this->nrulechain = -1;
-		this->st.push(grebach.stbottomT);
-		this->st.push(grebach.startN);
+		this->st.push(greibach.stbottomT);
+		this->st.push(greibach.startN);
 	}
 
 	char* Mfst::getCSt(char* buf) {
@@ -98,7 +94,7 @@ namespace MFST {
 	char* Mfst::getDiagnosis(short n, char* buf) {
 		char* str = (char*)"";
 		if (n < MFST_DIAGN_NUMBER && diagnosis[n].lenta_position > 0) {
-			Error::ERROR error = Error::geterror(grebach.getRule(diagnosis[n].nrule).idError);
+			Error::ERROR error = Error::geterror(greibach.getRule(diagnosis[n].nrule).idError);
 			sprintf_s(buf, ERROR_MAXSIZE_MESSAGE, "%d: строка %d,%s", error.id, lex.lextable.table[diagnosis[n].lenta_position].sn, error.message);
 			str = buf;
 		}
@@ -134,15 +130,15 @@ namespace MFST {
 		char* buff = new char[200];
 		RC_STEP state = SURPRISE;
 		*log.stream << std::endl;
-		*log.stream << std::setw(4) << std::left << counter << ": ";
+		(*log.stream) << std::setw(4) << std::left << counter << ": ";
 		if (lenta_position < lenta_size) {
 			if (GRB::Rule::Chain::isN(st.top())) {
 				GRB::Rule rule;
-				nrule = grebach.getRule(st.top(), rule);
+				nrule = greibach.getRule(st.top(), rule);
 				if (nrule >= 0) {
 					GRB::Rule::Chain chain;
 					nrulechain = rule.getNextChain(lenta[lenta_position], chain, nrulechain + 1);
-					if (nrulechain >= 0 || nrulechain == -2) {
+					if (nrulechain >= 0) {
 						char* buff = new char[200];
 						rule.getCRule(buff, nrulechain);
 						*log.stream << std::setw(20) << std::left << buff;
@@ -217,6 +213,10 @@ namespace MFST {
 		while (state == NS_OK || state == NS_NORULECHAIN || state == TS_OK || state == TS_NOK) {
 			state = step();
 		}
+		st.pop();
+		if (!st.empty()) {
+			state = NS_ERROR;
+		}
 		switch (state)
 		{
 		case MFST::Mfst::NS_NORULE: {
@@ -235,6 +235,8 @@ namespace MFST {
 		}
 		case MFST::Mfst::NS_ERROR: {
 			*log.stream << std::setw(20) << std::left << "------>NS_ERROR";
+			*log.stream << std::setw(20) << std::left << "\nОшибка 600. MFST: Неверная структура программы";
+			std::cout << "Ошибка 600. MFST: Неверная структура программы" << std::endl;
 			return false;
 			break;
 		}
@@ -273,8 +275,8 @@ namespace MFST {
 		int size = deducation.size;
 		(*log.stream) << std::endl;
 		for (unsigned int i = 0; i < size; i++) {
-			char buff[200]{};
-			GRB::Rule rule = grebach.getRule(deducation.nrules[i]);
+			char* buff = new char[200] {};
+			GRB::Rule rule = greibach.getRule(deducation.nrules[i]);
 			rule.getCRule(buff, deducation.nrulechains[i]);
 			(*log.stream) << std::setw(4) << std::left << deducation.nsteps[i] << ": " << buff << std::endl;
 		}

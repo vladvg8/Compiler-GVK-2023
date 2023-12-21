@@ -11,7 +11,6 @@
 #define LEX_LITERAL 'l'   // литерал
 #define LEX_FUNCTION 'f'  // function
 #define LEX_IF 'y'		  // if
-#define LEX_ELSE 'u'      // else
 #define LEX_DECLARE 'd'   // declare
 #define LEX_RETURN 'r'    // return
 #define LEX_DISPLAY 'p'   // display (print)
@@ -39,7 +38,7 @@ namespace LT {
 		int sn; // номер строки в исходном коде
 		int cn;
 		int idxTI; // индекс в таблице идентификаторов
-		char data;
+		std::vector<char>data;
 
 		Entry( // конструктор для строки таблицы лексем
 			char lexema,

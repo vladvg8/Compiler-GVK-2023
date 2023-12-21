@@ -14,17 +14,18 @@
 
 namespace IT {
 	enum IDDATATYPE { // типы данных идентификаторов
-		BYTE = 1, 
+		BYTE = 1,
 		TEXT = 2,
 		SYMBOL = 3,
 		BOOLEAN = 4,
 		HALLOW = 5
 	};
 	enum IDTYPE { // тип идентификаторов
-		VARIABLE = 1, 
-		FUNCTION = 2, 
-		PARAMETER = 3, 
-		LITERAL = 4
+		VARIABLE = 1,
+		FUNCTION = 2,
+		PARAMETER = 3,
+		LITERAL = 4,
+		STATIC_FUNCTION = 5
 	};
 
 	struct Entry {
@@ -33,7 +34,7 @@ namespace IT {
 		IDDATATYPE iddatatype; // тип данных
 		IDTYPE idtype; // тип ид
 		union {
-			unsigned short vbyte; // значение byte
+			short vbyte; // значение byte
 			bool vboolean; // значение boolean
 			char vsymbol; // значение symbol
 			struct {
@@ -80,5 +81,5 @@ namespace IT {
 	);
 	void Delete(IdTable& idtable);
 
-	
+	void AddFunctionStaticLib(IdTable& idtable);
 }

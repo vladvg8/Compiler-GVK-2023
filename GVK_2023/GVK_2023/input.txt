@@ -1,26 +1,53 @@
-declare byte function processSomethingnumber(byte n, byte dsadas) {
-    return n;
+declare byte function getNum(byte n) {
+	return n;
 }
 
-declare byte function getNumber() {
-return 1;
+declare text function setHelloText() {
+	display("Hello, World!");
+	return "Hello, World!";
 }
 
-declare hallow function processSomething() {
-    declare byte number: 123;
-    number: 42342;
-    if (true) {
-        display(processSomethingnumber(3, 2));
-    } else {
-        display(getNumber());
-    }
+declare symbol function setSym(symbol a) {
+	return a;
+}
+
+declare boolean function setBool() {
+	declare boolean b: true;
+	if (1 <= 3) {
+		b: false;
+	}
+	return b;
+}
+
+declare hallow function sayHello() {
+	display("Hello, my name is Vlad!");
+	declare text todaysData: "19.12.2023";
+	display(todaysData);
 }
 
 main {
-
-    if (2 < 1) {
-
-    } else {
-
-    }
+	declare byte number: 120;
+	declare symbol sym;;
+	declare text txt;
+	declare boolean bool;
+	if (number > 1) {
+		if (number <= 127) {
+			txt: setHelloText();
+			display(txt);
+		}
+		if (number == 120) {
+			sym: 'G';
+			display(sym);
+		}
+		number: Pow(9, 2);
+		display(number);
+		number: 120;
+		number: Sum(number, -100);
+		display(number);
+		bool: true;
+		if (bool) {
+			display("Bool is true");
+		}
+	}
+	sayHello();
 }

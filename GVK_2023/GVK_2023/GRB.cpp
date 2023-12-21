@@ -25,12 +25,11 @@ namespace GRB {
 		K - вспомогательные выражения для добавления нескольких параметров
 		W - то что может быть в скобках после if
 		T - вспомогаетльный граф для того что может быть после скобок if
-		J - выражение для else
 
 	*/
 
 	Greibach greibach(NS('S'), TS('$'),
-		12,
+		11,
 		Rule(NS('S'), GRB_ERROR_SERIES + 0, // функции и main
 			4,
 			Rule::Chain(),
@@ -58,12 +57,12 @@ namespace GRB {
 		Rule(NS('N'), GRB_ERROR_SERIES + 4, // тело
 			7,
 			Rule::Chain(),
+			Rule::Chain(5, TS('d'), TS('t'), TS('i'), TS(';'), NS('N')),
 			Rule::Chain(7, TS('d'), TS('t'), TS('i'), TS(':'), NS('E'), TS(';'), NS('N')),
 			Rule::Chain(5, TS('i'), TS(':'), NS('E'), TS(';'), NS('N')),
 			Rule::Chain(6, TS('p'), TS('('), NS('O'), TS(')'), TS(';'), NS('N')),
 			Rule::Chain(6, TS('i'), TS('('), NS('P'), TS(')'), TS(';'), NS('N')),
-			Rule::Chain(8, TS('y'), TS('('), NS('W'), TS(')'), TS('{'), NS('N'), TS('}'), NS('N')),
-			Rule::Chain(9, TS('y'), TS('('), NS('W'), TS(')'), TS('{'), NS('N'), TS('}'), NS('J'), NS('N'))
+			Rule::Chain(8, TS('y'), TS('('), NS('W'), TS(')'), TS('{'), NS('N'), TS('}'), NS('N'))
 		),
 		Rule(NS('E'), GRB_ERROR_SERIES + 5, 
 			3,
@@ -72,9 +71,8 @@ namespace GRB {
 			Rule::Chain(1, TS('l'))
 		),
 		Rule(NS('O'), GRB_ERROR_SERIES + 6, // то что ты передаешь в display
-			4,
+			3,
 			Rule::Chain(),
-			Rule::Chain(4, TS('i'), TS('('), NS('P'), TS(')')),
 			Rule::Chain(1, TS('i')),
 			Rule::Chain(1, TS('l'))
 		),
@@ -104,11 +102,6 @@ namespace GRB {
 			Rule::Chain(5, TS('k'), TS('i'), TS('('), NS('P'), TS(')')),
 			Rule::Chain(2, TS('k'), TS('i')),
 			Rule::Chain(2, TS('k'), TS('l'))
-		),
-		Rule(NS('J'), GRB_ERROR_SERIES + 11,
-			2,
-			Rule::Chain(),
-			Rule::Chain(4, TS('u'), TS('{'), NS('N'), TS('}'))
 		)
 		);
 

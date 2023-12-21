@@ -15,6 +15,27 @@ extern "C" {
 		for (int i = 0; i < power; i++) {
 			result *= operand;
 		}
-		return operand;
+		return result;
+	}
+
+	void __stdcall writestr(char* str) {
+		std::cout << str << std::endl;
+	}
+
+	void __stdcall writechar(char ch) {
+		std::cout << ch << std::endl;
+	}
+
+	void __stdcall writeint(int n) {
+		std::cout << n << std::endl;
+	}
+
+	void __stdcall writebool(bool b) {
+		if (b == false) {
+			std::cout << "false" << std::endl;
+		}
+		else {
+			std::cout << "true" << std::endl;
+		}
 	}
 }

@@ -3,6 +3,7 @@
 #include "IT.h"
 #include <string>
 #include <vector>
+#include <sstream>
 #include "Error.h"
 
 namespace FST {
@@ -142,7 +143,7 @@ namespace FST {
 				return;
 			}
 		}
-		throw ERROR_THROW(119); // не удалось разобрать
+		throw ERROR_THROW(120); // не удалось разобрать
 		word.clear();
 	}
 
@@ -160,6 +161,17 @@ namespace FST {
 		return true;
 	}
 
+	int VectorToInt(std::vector<char>word) {
+		std::string str(word.begin(), word.end());
+
+		//  онвертируем строку в int с помощью std::stringstream
+		std::stringstream ss(str);
+		int result;
+		ss >> result;
+
+		return result;
+	}
+
 	void AnalyzerWords(std::vector<FSTAssigned> FSTarray, LT::LexTable& lextable, IT::IdTable& idtable) {
 
 		bool isExecuted = false;
@@ -175,7 +187,8 @@ namespace FST {
 
 		IT::IDDATATYPE iddatatype = (IT::IDDATATYPE)0;
 		IT::IDTYPE idtype = (IT::IDTYPE)0;
-
+		int counterOfLiterals = 0;
+		std::string LIT = "LIT";
 		for (int i = 0; i < lexems.size(); i++) {
 			for (int j = 0; j < FSTarray.size(); j++) {
 				FSTarray[j].fst->string = lexems[i].word; // берем слово
@@ -185,9 +198,6 @@ namespace FST {
 					}
 					isExecuted = true;
 					LT::Entry LTObj(FSTarray[j].lex, lexems[i].line, lexems[i].col, 0xffffffff);
-					//if (isFuncStarted && FSTarray[j].lex != LEX_LEFTBRACE) {
-					//	throw ERROR_THROW_IN(126, lex.line, lex.col);
-					//}
 					switch (FSTarray[j].lex)
 					{
 					case LEX_DECLARE:
@@ -220,6 +230,9 @@ namespace FST {
 					}
 					case LEX_FUNCTION:
 					{
+						while (!parentStack.empty()) {
+							parentStack.pop_back();
+						}
 						idtype = IT::FUNCTION;
 						break;
 					}
@@ -233,6 +246,20 @@ namespace FST {
 					}
 					case LEX_ID:
 					{
+						if (compareVectorToCString(lexems[i].word, "Pow")) {
+							if (lextable.table[lextable.size - 1].lexema == LEX_FUNCTION) {
+								throw ERROR_THROW_IN(127, lexems[i].line, lexems[i].col);
+							}
+							LTObj.idxTI = 0;
+							break;
+						}
+						if (compareVectorToCString(lexems[i].word, "Sum")) {
+							if (lextable.table[lextable.size - 1].lexema == LEX_FUNCTION) {
+								throw ERROR_THROW_IN(127, lexems[i].line, lexems[i].col);
+							}
+							LTObj.idxTI = 1;
+							break;
+						}
 						std::string scope;
 						char* strr = new char[lexems[i].word.size()];
 						for (int g = 0; g < lexems[i].word.size(); g++) {
@@ -243,11 +270,11 @@ namespace FST {
 							scope += strr;
 						}
 						else {
-							for (int j = 0; j < parentStack.size(); j++) {
-								scope += parentStack.at(j);
+							if (parentStack.size() > 0) {
+								scope += parentStack.at(parentStack.size() - 1);
 							}
 							if (idtype != IT::FUNCTION) {
-								scope += "|";
+								scope += "$";
 								scope += strr;
 							}
 							else {
@@ -266,11 +293,14 @@ namespace FST {
 								if (iddatatype == IT::BYTE) {
 									IDTObj.value.vbyte = 0;
 								}
-								if (iddatatype == IT::BOOLEAN) {
+								else if (iddatatype == IT::BOOLEAN) {
 									IDTObj.value.vboolean = 0;
 								}
-								if (iddatatype == IT::HALLOW) {
+								else if (iddatatype == IT::HALLOW) {
 									IDTObj.value.vboolean = 0;
+								}
+								else if (iddatatype == IT::SYMBOL) {
+									IDTObj.value.vsymbol = ' ';
 								}
 								else {
 									for (int i = 0; i < TI_TEXT_MAXSIZE; i++) {
@@ -290,6 +320,9 @@ namespace FST {
 							}
 						}
 						else {
+							if (lextable.table[lextable.size - 2].lexema == LEX_DECLARE || lextable.table[lextable.size - 1].lexema == LEX_FUNCTION) {
+								throw ERROR_THROW_IN(128, lexems[i].line, lexems[i].col);
+							} 
 							LTObj.idxTI = IT::IsId(idtable, (char*)scope.c_str());
 						}
 						break;
@@ -314,7 +347,6 @@ namespace FST {
 					case LEX_RIGHTTHESIS:
 					{
 						if (isParam) {
-							parentStack.pop_back();
 							isParam = false;
 							isWasFunc = true;
 							isFuncStarted = false;
@@ -337,8 +369,6 @@ namespace FST {
 					{
 						if (isWasFunc) {
 							isWasFunc = false;
-							parentStack.pop_back();
-							
 						}
 						break;
 					}
@@ -346,7 +376,9 @@ namespace FST {
 					{
 						if (!isWasMain) {
 							isWasMain = true;
-							parentStack.pop_back();
+							while (!parentStack.empty()) {
+								parentStack.pop_back();
+							}
 							parentStack.push_back("main");
 						}
 						else {
@@ -356,43 +388,53 @@ namespace FST {
 					}
 					case LEX_LITERAL:
 					{
+						counterOfLiterals += 1;
+						LIT += std::to_string(counterOfLiterals);
+						IT::Entry ITObj;
 						if (lexems[i].word[0] == '\"') {
 							iddatatype = IT::TEXT;
+							ITObj.value.vtext->len = lexems[i].word.size();
+							for (int g = 0; g < lexems[i].word.size(); g++) {
+								ITObj.value.vtext->str[g] = lexems[i].word[g];
+							}
+							ITObj.value.vtext->str[lexems[i].word.size()] = '\0';
 						}
 						else if (lexems[i].word[0] == '\'') {
 							iddatatype = IT::SYMBOL;
+							ITObj.value.vsymbol = static_cast<int>(lexems[i].word[1]);
 						}
 						else if (compareVectorToCString(lexems[i].word, "false") || compareVectorToCString(lexems[i].word, "true")) {
 							iddatatype = IT::BOOLEAN;
+							if (compareVectorToCString(lexems[i].word, "false")) {
+								ITObj.value.vboolean = false;
+							}
+							else {
+								ITObj.value.vboolean = true;
+							}
 						}
 						else {
 							iddatatype = IT::BYTE;
+							ITObj.value.vbyte = VectorToInt(lexems[i].word);
 						}
 						idtype = IT::IDTYPE::LITERAL;
 						LTObj.idxTI = idtable.size;
-						IT::Entry ITObj;
 						ITObj.iddatatype = iddatatype;
 						ITObj.idtype = idtype;
 						ITObj.idxfirstLE = lextable.size;
 						for (int i = 0; i < 12; i++) {
 							ITObj.id[i] = '\0';
 						}
-						int cur = 0;
-						while (lexems[i].word.size() > cur) {
-							ITObj.id[cur] = lexems[i].word[cur];
-							cur++;
+						for (int g = 0; g < LIT.size(); g++) {
+							ITObj.id[g] = LIT[g];
 						}
-						ITObj.id[cur] = '\0';
+						ITObj.id[LIT.size()] = '\0';
 						IT::Add(idtable, ITObj);
+						LIT = "LIT";
 						break;
 					}
 					}
 					if (LTObj.lexema == LEX_MORE || LTObj.lexema == LEX_LEFTBRACE || LTObj.lexema == LEX_BRACELET || LTObj.lexema == LEX_LEFTTHESIS || LTObj.lexema == LEX_RIGHTTHESIS) {
-						char* strr = new char[lexems[i].word.size()];
-						for (int g = 0; g < lexems[i].word.size(); g++) {
-							strr[g] = lexems[i].word[g];
-						}
-						LTObj.data = strr[0];
+						LTObj.data = lexems[i].word;
 					}
 					LT::AddEntry(lextable, LTObj);
 					j = FSTarray.size();
@@ -564,32 +606,6 @@ namespace FST {
 			NODE(1, RELATION(')', 1)),
 			NODE()
 		);
-		// математические операции
-		FST lex_plus(
-			str,
-			2,
-			NODE(1, RELATION('+', 1)),
-			NODE()
-		);
-		FST lex_minus(
-			str,
-			2,
-			NODE(1, RELATION('-', 1)),
-			NODE()
-		);
-		FST lex_start(
-			str,
-			2,
-			NODE(1, RELATION('*', 1)),
-			NODE()
-		);
-		FST lex_dirslash(
-			str,
-			2,
-			NODE(1, RELATION('/', 1)),
-			NODE()
-		);
-
 		// логические операторы
 		FST lex_more(
 			str,
@@ -639,16 +655,6 @@ namespace FST {
 			3,
 			NODE(1, RELATION('i', 1)),
 			NODE(1, RELATION('f', 2)),
-			NODE()
-		);
-
-		FST lex_else(
-			str,
-			5,
-			NODE(1, RELATION('e', 1)),
-			NODE(1, RELATION('l', 2)),
-			NODE(1, RELATION('s', 3)),
-			NODE(1, RELATION('e', 4)),
 			NODE()
 		);
 
@@ -1324,7 +1330,7 @@ namespace FST {
 		FST lex_byteLiteral(
 			str,
 			3,
-			NODE(10,
+			NODE(11,
 				RELATION('-', 1),
 				RELATION('0', 2),
 				RELATION('1', 2),
@@ -1406,8 +1412,7 @@ namespace FST {
 
 			FSTAssigned(&lex_assigment, (IT::IDDATATYPE)0, LEX_ASSIGNMENT),	    // 19
 
-			FSTAssigned(&lex_if, (IT::IDDATATYPE)0, LEX_IF),					// 20
-			FSTAssigned(&lex_else, (IT::IDDATATYPE)0, LEX_ELSE),				// 21
+			FSTAssigned(&lex_if, (IT::IDDATATYPE)0, LEX_IF),			// 20
 
 			FSTAssigned(&lex_more, (IT::IDDATATYPE)0, LEX_MORE),				// 22
 			FSTAssigned(&lex_less, (IT::IDDATATYPE)0, LEX_LESS),				// 23
@@ -1423,7 +1428,7 @@ namespace FST {
 			FSTAssigned(&lex_booleanLiteral, IT::BOOLEAN, LEX_LITERAL)																	// 31
 		};
 		
-		int FSTarrayLen = 32;
+		int FSTarrayLen = 31;
 
 		IT::IDDATATYPE iddatatype = (IT::IDDATATYPE)0;
 		IT::IDTYPE idtype = (IT::IDTYPE)0;

@@ -1,4 +1,3 @@
-﻿  PolishN.cpp
-D:\Labs\KPO\course work\Compiler-GVK-2023\GVK_2023\GVK_2023\PolishN.cpp(51,28): warning C4018: <: несоответствие типов со знаком и без знака
-D:\Labs\KPO\course work\Compiler-GVK-2023\GVK_2023\GVK_2023\PolishN.cpp(61,21): warning C4018: <: несоответствие типов со знаком и без знака
+﻿  Semantic.cpp
+D:\Labs\KPO\course work\Compiler-GVK-2023\GVK_2023\GVK_2023\Semantic.cpp(3,27): warning C4616: предупреждение #pragma: предупреждение с номером "1041" не является действительным предупреждением компилятора
   GVK_2023.vcxproj -> D:\Labs\KPO\course work\Compiler-GVK-2023\GVK_2023\Debug\GVK_2023.exe

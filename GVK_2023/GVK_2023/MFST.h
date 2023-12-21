@@ -1,26 +1,15 @@
 #pragma once
 #include <stack>
 #include "GRB.h"
-#include "IT.h"
 #include "Log.h"
+#include "IT.h"
+#include "LT.h"
 
 #define MFST_DIAGN_NUMBER 3
 
+
 typedef std::stack<short> MFSTSTSTACK;
-
 namespace MFST {
-	struct LEX {
-		IT::IdTable idtable;
-		LT::LexTable lextable;
-
-		LEX(LT::LexTable llextable, IT::IdTable iidtable) {
-			this->idtable = iidtable;
-			this->lextable = llextable;
-		}
-
-		LEX() {};
-	};
-
 	struct MfstState {
 		short lenta_position;
 		short nrule;
@@ -38,6 +27,18 @@ namespace MFST {
 			short pnrule,
 			short pnrulechain
 		);
+	};
+
+	struct LEX {
+		IT::IdTable idtable;
+		LT::LexTable lextable;
+
+		LEX(LT::LexTable llextable, IT::IdTable iidtable) {
+			this->idtable = iidtable;
+			this->lextable = llextable;
+		}
+
+		LEX() {};
 	};
 
 	struct Mfst {
@@ -72,7 +73,7 @@ namespace MFST {
 		short nrulechain;
 		short lenta_size;
 		Log::LOG log;
-		GRB::Greibach grebach;
+		GRB::Greibach greibach;
 		LEX lex;
 		MFSTSTSTACK st;
 		std::stack<MfstState> storestate;
@@ -80,7 +81,7 @@ namespace MFST {
 		Mfst(
 			LEX plex,
 			GRB::Greibach pgrebach,
-			Log::LOG &plog
+			Log::LOG& plog
 		);
 		char* getCSt(char* buf);
 		char* getCLenta(char* buf, short pos, short n = 25);

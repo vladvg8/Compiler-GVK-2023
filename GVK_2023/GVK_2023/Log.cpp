@@ -70,6 +70,7 @@ namespace Log {
 	}
 
 	void WriteError(LOG log, Error::ERROR error) {
+		std::cout << "Ошибка " << error.id << " :" << error.message << ", строка " << error.inext.line << ", позиция " << error.inext.col;
 		(*log.stream) << "Ошибка " << error.id << " :" << error.message << ", строка " << error.inext.line << ", позиция " << error.inext.col;
 	}
 
@@ -89,6 +90,10 @@ namespace Log {
 			}
 			(*log.stream) << lextable.table[i].lexema;
 			//(*log.stream) << setw(4) << left << i << ":  " << lextable.table[i].lexema << endl;
+		}
+		*log.stream << "\nПозиция    Строка    Столбец    Лексема    ТИ";
+		for (int i = 0; i < lextable.size; i++) {
+			(*log.stream) << "\n" << i << "           " << lextable.table[i].sn << "         " << lextable.table[i].cn << "           " << lextable.table[i].lexema << "        " << lextable.table[i].idxTI;
 		}
 		(*log.stream) << "\n\n";
 		for (int i = 0; i < idtable.size; i++) {

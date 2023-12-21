@@ -43,6 +43,13 @@ namespace IT {
 		}
 		return TI_NULLIDX;
 	}
+	
+	void AddFunctionStaticLib(IdTable& idtable) {
+		Entry powFunction(0, (char*)"Pow", IDDATATYPE(1), IDTYPE(5));
+		Entry sumFunction(1, (char*)"Sum", IDDATATYPE(1), IDTYPE(5));
+		Add(idtable, powFunction);
+		Add(idtable, sumFunction);
+	}
 
 	void Delete(IdTable& idtable) {
 		delete& idtable;
